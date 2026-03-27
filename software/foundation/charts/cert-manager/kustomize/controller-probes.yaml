@@ -1,0 +1,40 @@
+# Copyright 2026, Microsoft
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager
+spec:
+  template:
+    spec:
+      containers:
+        - name: cert-manager-controller
+          # The chart only has livenessProbe - we need to add readinessProbe
+          # for AKS Automatic safeguards compliance
+          # NOTE: cert-manager controller only exposes /livez endpoint (not /readyz)
+          # See: https://github.com/cert-manager/cert-manager/blob/master/pkg/healthz/healthz.go
+          # The healthz server uses k8s.io/apiserver/pkg/server/healthz.InstallLivezHandler
+          # which only registers /livez. Using /livez for readiness is acceptable here
+          # as it checks leader election health which indicates the controller is ready.
+          readinessProbe:
+            httpGet:
+              path: /livez
+              port: 9403
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1

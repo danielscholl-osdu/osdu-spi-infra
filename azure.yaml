@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: osdu-spi-infra
+metadata:
+  template: osdu-spi-infra@0.0.1
+
+# Layer 1: Cluster Infrastructure + Azure PaaS (azd provision)
+infra:
+  provider: terraform
+  path: infra
+
+# Hooks for multi-layer deployment
+hooks:
+  # Pre-restore: Resolve OSDU chart versions from OCI registry
+  prerestore:
+    interactive: true
+    continueOnError: false
+    shell: pwsh
+    run: ./scripts/resolve-chart-versions.ps1
+
+  # Pre-provision: Validate prerequisites
+  preprovision:
+    interactive: true
+    continueOnError: false
+    shell: pwsh
+    run: ./scripts/pre-provision.ps1
+
+  # Post-provision: Configure safeguards and deploy foundation layer
+  postprovision:
+    interactive: true
+    continueOnError: false
+    shell: pwsh
+    run: ./scripts/post-provision.ps1
+
+  # Pre-deploy: Deploy default stack (Layer 3)
+  predeploy:
+    interactive: true
+    continueOnError: false
+    shell: pwsh
+    run: ./scripts/pre-deploy.ps1
+
+  # Pre-down: Destroy platform layer before cluster teardown
+  predown:
+    interactive: true
+    continueOnError: false
+    shell: pwsh
+    run: ./scripts/pre-down.ps1
+
+  # Post-down: Clean up .terraform dirs and stale state artifacts
+  postdown:
+    interactive: false
+    continueOnError: true
+    shell: pwsh
+    run: ./scripts/post-down.ps1
