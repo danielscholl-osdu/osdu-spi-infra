@@ -144,17 +144,6 @@ output "ACR_LOGIN_SERVER" {
   value       = azurerm_container_registry.main.login_server
 }
 
-# Redis
-output "REDIS_HOSTNAME" {
-  description = "Azure Cache for Redis hostname"
-  value       = azurerm_redis_cache.main.hostname
-}
-
-output "REDIS_SSL_PORT" {
-  description = "Azure Cache for Redis SSL port"
-  value       = azurerm_redis_cache.main.ssl_port
-}
-
 # Application Insights
 output "APP_INSIGHTS_KEY" {
   description = "Application Insights instrumentation key"

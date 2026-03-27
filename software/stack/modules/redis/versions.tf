@@ -12,23 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Credential variables (all sensitive)
-# Azure SPI variant -- only PostgreSQL passwords needed (PaaS handles the rest)
-
-variable "redis_password" {
-  description = "In-cluster Redis authentication password"
-  type        = string
-  sensitive   = true
-}
-
-variable "postgresql_password" {
-  description = "PostgreSQL superuser password (CNPG cluster for Airflow)"
-  type        = string
-  sensitive   = true
-}
-
-variable "airflow_db_password" {
-  description = "Airflow database user password"
-  type        = string
-  sensitive   = true
+terraform {
+  required_providers {
+    helm = {
+      source = "hashicorp/helm"
+    }
+    kubernetes = {
+      source = "hashicorp/kubernetes"
+    }
+  }
 }

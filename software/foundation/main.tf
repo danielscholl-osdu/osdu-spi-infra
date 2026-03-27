@@ -175,6 +175,27 @@ resource "kubectl_manifest" "pg_storage_class" {
   YAML
 }
 
+resource "kubectl_manifest" "redis_storage_class" {
+  count     = true ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: redis-storageclass
+      labels:
+        app: redis
+    parameters:
+      skuName: Premium_LRS
+      kind: Managed
+      cachingMode: ReadOnly
+      tags: costcenter=dev,app=redis
+    provisioner: disk.csi.azure.com
+    reclaimPolicy: Retain
+    volumeBindingMode: WaitForFirstConsumer
+    allowVolumeExpansion: true
+  YAML
+}
+
 resource "kubectl_manifest" "elastic_storage_class" {
   count     = var.enable_elasticsearch ? 1 : 0
   yaml_body = <<-YAML

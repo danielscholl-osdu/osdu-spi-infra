@@ -45,6 +45,12 @@ variable "enable_gateway" {
   default     = true
 }
 
+variable "enable_redis" {
+  description = "Enable in-cluster Redis deployment"
+  type        = bool
+  default     = true
+}
+
 variable "enable_elasticsearch" {
   description = "Enable Elasticsearch + Kibana deployment"
   type        = bool

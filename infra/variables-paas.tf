@@ -45,19 +45,6 @@ variable "servicebus_sku" {
   default     = "Standard"
 }
 
-# Azure Cache for Redis configuration
-variable "redis_sku_name" {
-  description = "Redis SKU (Basic, Standard, or Premium)"
-  type        = string
-  default     = "Basic"
-}
-
-variable "redis_capacity" {
-  description = "Redis capacity (0-6 for Basic/Standard, 1-5 for Premium)"
-  type        = number
-  default     = 1
-}
-
 # Azure Container Registry configuration
 variable "acr_sku" {
   description = "Container Registry SKU"

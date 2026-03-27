@@ -14,8 +14,8 @@
 
 # Config-driven stack -- middleware + OSDU services (Azure SPI variant)
 #
-# Azure PaaS replaces in-cluster middleware for: PostgreSQL, Redis, Service Bus,
-# Storage, CosmosDB, Key Vault. In-cluster: Elasticsearch, Airflow, lightweight PG.
+# Azure PaaS replaces in-cluster middleware for: Service Bus, Storage, CosmosDB, Key Vault.
+# In-cluster: Elasticsearch, Redis, CNPG PostgreSQL (Airflow), Airflow.
 #
 # A single source directory serves all stack instances via STACK_NAME:
 # - (unset)  -> namespaces: platform, osdu
@@ -33,9 +33,11 @@ locals {
     "app.kubernetes.io/part-of"    = "osdu-stack-${local.stack_label}"
   }
 
-  # Cross-namespace service FQDNs (only in-cluster services)
+  # Cross-namespace service FQDNs (in-cluster services)
   elasticsearch_host = "elasticsearch-es-http.${local.platform_namespace}.svc.cluster.local"
-  postgresql_host    = "postgresql.${local.platform_namespace}.svc.cluster.local"
+  postgresql_host    = "postgresql-rw.${local.platform_namespace}.svc.cluster.local"
+  redis_host         = "redis-master.${local.platform_namespace}.svc.cluster.local"
+  redis_port         = "6379"
 
   # Ingress hostname derivation
   kibana_hostname      = var.ingress_prefix != "" && var.dns_zone_name != "" ? "${var.ingress_prefix}-kibana.${var.dns_zone_name}" : ""

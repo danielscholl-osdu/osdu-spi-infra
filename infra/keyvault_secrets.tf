@@ -29,9 +29,6 @@ locals {
     "container-registry"  = azurerm_container_registry.main.name
     "insights-key"        = azurerm_application_insights.main.instrumentation_key
     "insights-connection" = azurerm_application_insights.main.connection_string
-    "redis-hostname"      = azurerm_redis_cache.main.hostname
-    "redis-password"      = azurerm_redis_cache.main.primary_access_key
-    "redis-port"          = tostring(azurerm_redis_cache.main.ssl_port)
     "graph-db-endpoint"   = azurerm_cosmosdb_account.graph.endpoint
     "graph-db-primary-key" = azurerm_cosmosdb_account.graph.primary_key
     "graph-db-connection" = azurerm_cosmosdb_account.graph.primary_sql_connection_string

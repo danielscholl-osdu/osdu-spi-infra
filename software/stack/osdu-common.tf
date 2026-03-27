@@ -34,8 +34,8 @@ module "osdu_common" {
   cosmosdb_database    = var.cosmosdb_database
   storage_account_name = var.storage_account_name
   servicebus_namespace = var.servicebus_namespace
-  redis_hostname       = var.redis_hostname
-  redis_port           = var.redis_port
+  redis_hostname       = local.redis_host
+  redis_port           = local.redis_port
   appinsights_key      = var.appinsights_key
 
   # Elasticsearch credentials from in-cluster ECK

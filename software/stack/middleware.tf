@@ -36,6 +36,14 @@ module "postgresql" {
   airflow_db_password = var.airflow_db_password
 }
 
+module "redis" {
+  source = "./modules/redis"
+  count  = var.enable_redis ? 1 : 0
+
+  namespace      = kubernetes_namespace_v1.platform.metadata[0].name
+  redis_password = var.redis_password
+}
+
 module "airflow" {
   source = "./modules/airflow"
   count  = var.enable_airflow ? 1 : 0

@@ -52,17 +52,6 @@ variable "servicebus_namespace" {
   type        = string
 }
 
-variable "redis_hostname" {
-  description = "Azure Cache for Redis hostname"
-  type        = string
-}
-
-variable "redis_port" {
-  description = "Azure Cache for Redis port"
-  type        = string
-  default     = "6380"
-}
-
 variable "appinsights_key" {
   description = "Application Insights instrumentation key"
   type        = string
