@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "host" {
-  description = "PostgreSQL read-write service FQDN (CNPG)"
-  value       = "postgresql-rw.${var.namespace}.svc.cluster.local"
-}
-
-output "port" {
-  description = "PostgreSQL service port"
-  value       = "5432"
+terraform {
+  required_providers {
+    helm = {
+      source = "hashicorp/helm"
+    }
+  }
 }

@@ -49,6 +49,12 @@ variable "enable_cert_manager" {
   default     = true
 }
 
+variable "enable_postgresql" {
+  description = "Enable CNPG operator deployment (PostgreSQL for Airflow)"
+  type        = bool
+  default     = true
+}
+
 variable "enable_elasticsearch" {
   description = "Enable ECK operator deployment"
   type        = bool

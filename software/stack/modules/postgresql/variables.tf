@@ -12,21 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Variables for the lightweight PostgreSQL module (Airflow metadata only)
-
 variable "namespace" {
-  description = "Kubernetes namespace"
+  description = "Kubernetes namespace for PostgreSQL"
   type        = string
 }
 
-variable "db_password" {
-  description = "PostgreSQL password for the airflow user"
+variable "postgresql_password" {
+  description = "PostgreSQL superuser password"
+  type        = string
+  sensitive   = true
+}
+
+variable "airflow_db_password" {
+  description = "Airflow database user password"
   type        = string
   sensitive   = true
 }
 
 variable "storage_size" {
-  description = "PVC storage size for PostgreSQL data"
+  description = "Storage size for PostgreSQL data"
   type        = string
   default     = "8Gi"
 }

@@ -12,63 +12,100 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Lightweight PostgreSQL for Airflow metadata database
-# Uses Bitnami PostgreSQL Helm chart (single-instance, not CNPG)
-#
+# CNPG PostgreSQL Cluster for Airflow metadata database.
 # This is NOT the OSDU data store -- OSDU services use Azure CosmosDB.
-# This PostgreSQL instance is solely for Airflow's metadata database.
 
-resource "helm_release" "postgresql" {
-  name             = "postgresql"
-  repository       = "oci://registry-1.docker.io/bitnamicharts"
-  chart            = "postgresql"
-  version          = "16.4.1"
-  namespace        = var.namespace
-  create_namespace = false
-  wait             = true
-  timeout          = 600
+resource "kubernetes_secret_v1" "postgresql_superuser" {
+  metadata {
+    name      = "postgresql-superuser-credentials"
+    namespace = var.namespace
+  }
 
-  values = [<<-YAML
-    auth:
-      database: airflow
-      username: airflow
-      existingSecret: ""
+  data = {
+    username = "postgres"
+    password = var.postgresql_password
+  }
+}
 
-    primary:
-      persistence:
+resource "kubernetes_secret_v1" "airflow_db" {
+  metadata {
+    name      = "airflow-db-credentials"
+    namespace = var.namespace
+  }
+
+  data = {
+    username = "airflow"
+    password = var.airflow_db_password
+  }
+}
+
+resource "kubectl_manifest" "postgresql_cluster" {
+  yaml_body = <<-YAML
+    apiVersion: postgresql.cnpg.io/v1
+    kind: Cluster
+    metadata:
+      name: postgresql
+      namespace: ${var.namespace}
+    spec:
+      instances: 3
+      enableSuperuserAccess: true
+      minSyncReplicas: 1
+      maxSyncReplicas: 1
+      replicationSlots:
+        highAvailability:
+          enabled: true
+      superuserSecret:
+        name: postgresql-superuser-credentials
+      bootstrap:
+        initdb:
+          database: airflow
+          owner: airflow
+          secret:
+            name: airflow-db-credentials
+          dataChecksums: true
+      storage:
         size: ${var.storage_size}
+        storageClass: pg-storageclass
+      walStorage:
+        size: 4Gi
+        storageClass: pg-storageclass
       resources:
         requests:
-          cpu: 250m
-          memory: 512Mi
-        limits:
-          cpu: "1"
+          cpu: 500m
           memory: 1Gi
-      tolerations:
-        - key: workload
-          operator: Equal
-          value: "platform"
-          effect: NoSchedule
-      nodeSelector:
-        agentpool: platform
-      podSecurityContext:
-        fsGroup: 1001
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
-      containerSecurityContext:
-        runAsUser: 1001
-        allowPrivilegeEscalation: false
-
-    metrics:
-      enabled: false
+        limits:
+          cpu: "2"
+          memory: 2Gi
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              cnpg.io/cluster: postgresql
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              cnpg.io/cluster: postgresql
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: agentpool
+                    operator: In
+                    values:
+                      - platform
+        tolerations:
+          - effect: NoSchedule
+            key: workload
+            value: "platform"
   YAML
-  ]
 
-  set_sensitive = [
-    {
-      name  = "auth.password"
-      value = var.db_password
-    },
+  depends_on = [
+    kubernetes_secret_v1.postgresql_superuser,
+    kubernetes_secret_v1.airflow_db
   ]
 }

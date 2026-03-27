@@ -31,8 +31,9 @@ module "postgresql" {
   source = "./modules/postgresql"
   count  = local.deploy_postgresql_airflow ? 1 : 0
 
-  namespace   = kubernetes_namespace_v1.platform.metadata[0].name
-  db_password = var.airflow_db_password
+  namespace           = kubernetes_namespace_v1.platform.metadata[0].name
+  postgresql_password = var.postgresql_password
+  airflow_db_password = var.airflow_db_password
 }
 
 module "airflow" {

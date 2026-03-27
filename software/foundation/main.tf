@@ -60,6 +60,13 @@ module "elastic" {
   namespace = kubernetes_namespace_v1.platform.metadata[0].name
 }
 
+module "cnpg" {
+  source = "./charts/cnpg"
+  count  = var.enable_postgresql ? 1 : 0
+
+  namespace = kubernetes_namespace_v1.platform.metadata[0].name
+}
+
 module "external_dns" {
   source = "./charts/external-dns"
   count  = var.enable_external_dns ? 1 : 0
@@ -146,6 +153,27 @@ resource "kubectl_manifest" "gateway" {
 # ---------------------------------------------------------------------------
 # Storage Classes -- shared across all stacks
 # ---------------------------------------------------------------------------
+
+resource "kubectl_manifest" "pg_storage_class" {
+  count     = var.enable_postgresql ? 1 : 0
+  yaml_body = <<-YAML
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: pg-storageclass
+      labels:
+        app: postgresql
+    parameters:
+      skuName: Premium_LRS
+      kind: Managed
+      cachingMode: ReadOnly
+      tags: costcenter=dev,app=postgresql
+    provisioner: disk.csi.azure.com
+    reclaimPolicy: Retain
+    volumeBindingMode: WaitForFirstConsumer
+    allowVolumeExpansion: true
+  YAML
+}
 
 resource "kubectl_manifest" "elastic_storage_class" {
   count     = var.enable_elasticsearch ? 1 : 0

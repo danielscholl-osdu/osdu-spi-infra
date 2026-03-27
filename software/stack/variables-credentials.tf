@@ -13,10 +13,16 @@
 # limitations under the License.
 
 # Credential variables (all sensitive)
-# Azure SPI variant -- only Airflow DB password needed (PaaS handles the rest)
+# Azure SPI variant -- only PostgreSQL passwords needed (PaaS handles the rest)
+
+variable "postgresql_password" {
+  description = "PostgreSQL superuser password (CNPG cluster for Airflow)"
+  type        = string
+  sensitive   = true
+}
 
 variable "airflow_db_password" {
-  description = "Airflow database password (for lightweight in-cluster PostgreSQL)"
+  description = "Airflow database user password"
   type        = string
   sensitive   = true
 }
