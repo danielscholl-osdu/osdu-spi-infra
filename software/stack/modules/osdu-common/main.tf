@@ -102,7 +102,7 @@ resource "kubernetes_service_account_v1" "workload_identity" {
 # ─── Elasticsearch credential secret ───────────────────────────────────────────
 
 resource "kubernetes_secret_v1" "elastic_credentials" {
-  count = var.elasticsearch_password != "" ? 1 : 0
+  count = var.enable_elasticsearch ? 1 : 0
 
   metadata {
     name      = "elastic-credentials"
@@ -118,7 +118,7 @@ resource "kubernetes_secret_v1" "elastic_credentials" {
 }
 
 resource "kubernetes_secret_v1" "elastic_ca_cert" {
-  count = var.elasticsearch_ca_cert != "" ? 1 : 0
+  count = var.enable_elasticsearch ? 1 : 0
 
   metadata {
     name      = "elastic-ca-cert"

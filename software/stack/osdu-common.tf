@@ -39,6 +39,7 @@ module "osdu_common" {
   appinsights_key      = var.appinsights_key
 
   # Elasticsearch credentials from in-cluster ECK
+  enable_elasticsearch   = var.enable_elasticsearch && var.enable_elastic_bootstrap
   elasticsearch_host     = local.elasticsearch_host
   elasticsearch_password = var.enable_elasticsearch && var.enable_elastic_bootstrap ? module.elastic[0].elastic_password : ""
   elasticsearch_ca_cert  = var.enable_elasticsearch && var.enable_elastic_bootstrap ? module.elastic[0].elastic_ca_cert : ""

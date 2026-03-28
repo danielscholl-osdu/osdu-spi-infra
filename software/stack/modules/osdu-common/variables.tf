@@ -87,6 +87,12 @@ variable "appinsights_key" {
   default     = ""
 }
 
+variable "enable_elasticsearch" {
+  description = "Whether Elasticsearch is deployed (controls ES secret creation)"
+  type        = bool
+  default     = false
+}
+
 variable "elasticsearch_host" {
   description = "Elasticsearch HTTP service host"
   type        = string
