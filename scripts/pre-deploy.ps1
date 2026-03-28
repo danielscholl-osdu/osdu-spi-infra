@@ -238,7 +238,9 @@ function Get-PlatformVars {
     $storageAccountName = Get-AzdValue -Name "PARTITION_STORAGE_NAMES"
     $commonStorageName = Get-AzdValue -Name "COMMON_STORAGE_NAME"
     $servicebusNamespace = Get-AzdValue -Name "PARTITION_SERVICEBUS_NAMESPACES"
-    $redisHostname = Get-AzdValue -Name "REDIS_HOSTNAME"
+    $redisPassword = Get-AzdValue -Name "TF_VAR_redis_password"
+    $postgresqlPassword = Get-AzdValue -Name "TF_VAR_postgresql_password"
+    $airflowDbPassword = Get-AzdValue -Name "TF_VAR_airflow_db_password"
     $appInsightsKey = Get-AzdValue -Name "APP_INSIGHTS_KEY"
     $osduIdentityClientId = Get-AzdValue -Name "OSDU_IDENTITY_CLIENT_ID"
     $dataPartition = Get-AzdValue -Name "TF_VAR_data_partition"
@@ -261,7 +263,9 @@ function Get-PlatformVars {
         StorageAccountName   = $storageAccountName
         CommonStorageName    = $commonStorageName
         ServicebusNamespace  = $servicebusNamespace
-        RedisHostname        = $redisHostname
+        RedisPassword        = $redisPassword
+        PostgresqlPassword   = $postgresqlPassword
+        AirflowDbPassword    = $airflowDbPassword
         AppInsightsKey       = $appInsightsKey
         OsduIdentityClientId = $osduIdentityClientId
         DataPartition        = $dataPartition
@@ -321,7 +325,9 @@ function Deploy-Stack {
         "-var=storage_account_name=$($Vars.StorageAccountName)",
         "-var=common_storage_name=$($Vars.CommonStorageName)",
         "-var=servicebus_namespace=$($Vars.ServicebusNamespace)",
-        "-var=redis_hostname=$($Vars.RedisHostname)",
+        "-var=redis_password=$($Vars.RedisPassword)",
+        "-var=postgresql_password=$($Vars.PostgresqlPassword)",
+        "-var=airflow_db_password=$($Vars.AirflowDbPassword)",
         "-var=appinsights_key=$($Vars.AppInsightsKey)",
         "-var=osdu_identity_client_id=$($Vars.OsduIdentityClientId)",
         "-var=data_partition=$($Vars.DataPartition)"

@@ -459,6 +459,8 @@ function Reset-DeploymentState {
 
 function Set-Credentials {
     $secrets = @(
+        @{ Name = "TF_VAR_redis_password" }
+        @{ Name = "TF_VAR_postgresql_password" }
         @{ Name = "TF_VAR_airflow_db_password" }
     )
 
