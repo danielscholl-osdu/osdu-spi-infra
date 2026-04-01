@@ -187,79 +187,6 @@ resource "kubernetes_service_account_v1" "elastic_bootstrap" {
   }
 }
 
-resource "time_sleep" "wait_for_eck_reconciliation" {
-  count = var.enable_bootstrap ? 1 : 0
-
-  depends_on      = [kubectl_manifest.elasticsearch]
-  create_duration = "60s"
-}
-
-data "kubernetes_secret_v1" "elasticsearch_password" {
-  count = var.enable_bootstrap ? 1 : 0
-
-  metadata {
-    name      = "elasticsearch-es-elastic-user"
-    namespace = var.namespace
-  }
-
-  depends_on = [time_sleep.wait_for_eck_reconciliation]
-}
-
-data "kubernetes_secret_v1" "elasticsearch_ca_cert" {
-  count = var.enable_bootstrap ? 1 : 0
-
-  metadata {
-    name      = "elasticsearch-es-http-certs-public"
-    namespace = var.namespace
-  }
-
-  depends_on = [time_sleep.wait_for_eck_reconciliation]
-}
-
-resource "kubernetes_secret_v1" "elastic_bootstrap_secret" {
-  count = var.enable_bootstrap ? 1 : 0
-
-  metadata {
-    name      = "elastic-bootstrap-secret"
-    namespace = var.namespace
-  }
-
-  data = {
-    ELASTIC_HOST_SYSTEM = "elasticsearch-es-http.${var.namespace}.svc"
-    ELASTIC_PORT_SYSTEM = "9200"
-    ELASTIC_USER_SYSTEM = "elastic"
-    ELASTIC_PASS_SYSTEM = data.kubernetes_secret_v1.elasticsearch_password[0].data["elastic"]
-  }
-}
-
-resource "kubernetes_secret_v1" "indexer_elastic_secret" {
-  count = var.enable_bootstrap ? 1 : 0
-
-  metadata {
-    name      = "indexer-elastic-secret"
-    namespace = var.namespace
-  }
-
-  data = {
-    ELASTIC_USER_SYSTEM = "elastic"
-    ELASTIC_PASS_SYSTEM = data.kubernetes_secret_v1.elasticsearch_password[0].data["elastic"]
-  }
-}
-
-resource "kubernetes_secret_v1" "search_elastic_secret" {
-  count = var.enable_bootstrap ? 1 : 0
-
-  metadata {
-    name      = "search-elastic-secret"
-    namespace = var.namespace
-  }
-
-  data = {
-    ELASTIC_USER_SYSTEM = "elastic"
-    ELASTIC_PASS_SYSTEM = data.kubernetes_secret_v1.elasticsearch_password[0].data["elastic"]
-  }
-}
-
 resource "helm_release" "elastic_bootstrap" {
   count = var.enable_bootstrap ? 1 : 0
 
@@ -302,8 +229,5 @@ resource "helm_release" "elastic_bootstrap" {
   depends_on = [
     kubectl_manifest.elasticsearch,
     kubernetes_service_account_v1.elastic_bootstrap,
-    kubernetes_secret_v1.elastic_bootstrap_secret,
-    kubernetes_secret_v1.indexer_elastic_secret,
-    kubernetes_secret_v1.search_elastic_secret
   ]
 }

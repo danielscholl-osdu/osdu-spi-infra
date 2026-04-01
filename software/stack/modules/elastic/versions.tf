@@ -23,8 +23,5 @@ terraform {
     helm = {
       source = "hashicorp/helm"
     }
-    time = {
-      source = "hashicorp/time"
-    }
   }
 }

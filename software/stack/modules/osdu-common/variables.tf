@@ -99,15 +99,3 @@ variable "elasticsearch_host" {
   default     = ""
 }
 
-variable "elasticsearch_password" {
-  description = "Elasticsearch elastic user password"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
-variable "elasticsearch_ca_cert" {
-  description = "ECK self-signed CA certificate (PEM)"
-  type        = string
-  default     = ""
-}
