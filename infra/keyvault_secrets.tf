@@ -21,17 +21,24 @@
 
 locals {
   global_secrets = {
-    "tenant-id"           = data.azurerm_client_config.current.tenant_id
-    "subscription-id"     = data.azurerm_client_config.current.subscription_id
-    "osdu-identity-id"    = azurerm_user_assigned_identity.osdu.client_id
-    "keyvault-uri"        = azurerm_key_vault.main.vault_uri
-    "system-storage"      = azurerm_storage_account.common.name
-    "container-registry"  = azurerm_container_registry.main.name
-    "insights-key"        = azurerm_application_insights.main.instrumentation_key
-    "insights-connection" = azurerm_application_insights.main.connection_string
-    "graph-db-endpoint"   = azurerm_cosmosdb_account.graph.endpoint
-    "graph-db-primary-key" = azurerm_cosmosdb_account.graph.primary_key
-    "graph-db-connection" = azurerm_cosmosdb_account.graph.primary_sql_connection_string
+    "tenant-id"              = data.azurerm_client_config.current.tenant_id
+    "subscription-id"        = data.azurerm_client_config.current.subscription_id
+    "osdu-identity-id"       = azurerm_user_assigned_identity.osdu.client_id
+    "keyvault-uri"           = azurerm_key_vault.main.vault_uri
+    "system-storage"         = azurerm_storage_account.common.name
+    "tbl-storage"            = azurerm_storage_account.common.name
+    "tbl-storage-key"        = azurerm_storage_account.common.primary_access_key
+    "tbl-storage-endpoint"   = azurerm_storage_account.common.primary_table_endpoint
+    "app-dev-sp-password"    = "DISABLED"
+    "app-dev-sp-username"    = azurerm_user_assigned_identity.osdu.client_id
+    "app-dev-sp-tenant-id"   = data.azurerm_client_config.current.tenant_id
+    "app-dev-sp-id"          = azurerm_user_assigned_identity.osdu.client_id
+    "container-registry"     = azurerm_container_registry.main.name
+    "insights-key"           = azurerm_application_insights.main.instrumentation_key
+    "insights-connection"    = azurerm_application_insights.main.connection_string
+    "graph-db-endpoint"      = azurerm_cosmosdb_account.graph.endpoint
+    "graph-db-primary-key"   = azurerm_cosmosdb_account.graph.primary_key
+    "graph-db-connection"    = azurerm_cosmosdb_account.graph.primary_sql_connection_string
   }
 }
 

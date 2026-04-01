@@ -34,7 +34,7 @@ resource "azurerm_user_assigned_identity" "osdu" {
 resource "azurerm_federated_identity_credential" "osdu" {
   for_each  = local.federated_credentials
   name      = each.key
-  parent_id = azurerm_user_assigned_identity.osdu.id
+  user_assigned_identity_id = azurerm_user_assigned_identity.osdu.id
   audience  = ["api://AzureADTokenExchange"]
   issuer    = module.aks.oidc_issuer_profile_issuer_url
   subject   = each.value

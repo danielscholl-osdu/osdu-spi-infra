@@ -119,7 +119,7 @@ variable "probes" {
   default = {
     liveness = {
       path                = "/actuator/health"
-      port                = 8081
+      port                = 8080
       initialDelaySeconds = 250
       periodSeconds       = 10
       timeoutSeconds      = 5
@@ -127,13 +127,31 @@ variable "probes" {
     }
     readiness = {
       path                = "/actuator/health"
-      port                = 8081
+      port                = 8080
       initialDelaySeconds = 10
       periodSeconds       = 10
       timeoutSeconds      = 5
       failureThreshold    = 3
     }
   }
+}
+
+variable "init_containers" {
+  description = "Extra init containers (e.g., data download for reference services)"
+  type        = any
+  default     = []
+}
+
+variable "volume_mounts" {
+  description = "Extra volume mounts for the main container"
+  type        = any
+  default     = []
+}
+
+variable "volumes" {
+  description = "Extra volumes for the pod"
+  type        = any
+  default     = []
 }
 
 variable "preconditions" {

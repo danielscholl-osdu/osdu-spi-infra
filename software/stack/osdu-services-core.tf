@@ -71,11 +71,11 @@ module "entitlements" {
 
   probes = {
     liveness = {
-      path = "/actuator/health", port = 8081
+      path = "/actuator/health", port = 8080
       initialDelaySeconds = 150, periodSeconds = 10, timeoutSeconds = 5, failureThreshold = 3
     }
     readiness = {
-      path = "/actuator/health", port = 8081
+      path = "/actuator/health", port = 8080
       initialDelaySeconds = 10, periodSeconds = 10, timeoutSeconds = 5, failureThreshold = 3
     }
   }
@@ -361,6 +361,8 @@ module "file" {
     { name = "authorizeAPI", value = "http://entitlements/api/entitlements/v2" },
     { name = "OSDU_STORAGE_URL", value = "http://storage/api/storage/v2" },
     { name = "SEARCH_HOST", value = "http://search/api/search/v2" },
+    { name = "AZURE_AD_APP_RESOURCE_ID", value = var.osdu_identity_client_id },
+    { name = "AAD_CLIENT_ID", value = var.osdu_identity_client_id },
   ]
 
   preconditions = [

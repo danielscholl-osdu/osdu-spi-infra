@@ -38,14 +38,14 @@ service:
 probes:
   liveness:
     path: /actuator/health
-    port: 8081
+    port: 8080
     initialDelaySeconds: 250
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
   readiness:
     path: /actuator/health
-    port: 8081
+    port: 8080
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5
@@ -64,6 +64,15 @@ resources:
 env: []
 # - name: FOO
 #   value: bar
+
+# -- Extra init containers (for data download, etc.)
+initContainers: []
+
+# -- Extra volume mounts for the main container
+volumeMounts: []
+
+# -- Extra volumes
+volumes: []
 
 # -- Workload identity pod label
 workloadIdentity: true

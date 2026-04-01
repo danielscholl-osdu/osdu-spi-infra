@@ -45,9 +45,12 @@ resource "helm_release" "service" {
       enabled = var.istio_proxy_pin
       image   = "mcr.microsoft.com/oss/v2/istio/proxyv2:v1.28.3-2"
     }
-    env       = var.env
-    resources = var.resources
-    probes    = var.probes
+    env            = var.env
+    resources      = var.resources
+    probes         = var.probes
+    initContainers = var.init_containers
+    volumeMounts   = var.volume_mounts
+    volumes        = var.volumes
   })]
 
   lifecycle {
