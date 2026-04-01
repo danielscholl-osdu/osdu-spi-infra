@@ -38,14 +38,14 @@ service:
 probes:
   liveness:
     path: /actuator/health
-    port: 8080
+    port: 8081
     initialDelaySeconds: 250
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
   readiness:
     path: /actuator/health
-    port: 8080
+    port: 8081
     initialDelaySeconds: 10
     periodSeconds: 10
     timeoutSeconds: 5

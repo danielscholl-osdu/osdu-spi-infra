@@ -131,3 +131,33 @@ resource "null_resource" "elastic_keyvault_secrets" {
 
   depends_on = [module.elastic, module.osdu_common]
 }
+
+# Indexer and workflow services retrieve Redis connection details at runtime
+# via KeyVaultFacade. Store the in-cluster Redis hostname and password.
+resource "null_resource" "redis_keyvault_secrets" {
+  count = var.enable_redis && local.deploy_common ? 1 : 0
+
+  triggers = {
+    keyvault_name = var.keyvault_name
+    redis_host    = "redis-master.${local.platform_namespace}.svc.cluster.local"
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+      az keyvault secret set --vault-name ${var.keyvault_name} \
+        --name "redis-hostname" \
+        --value "redis-master.${local.platform_namespace}.svc.cluster.local" \
+        --output none
+
+      az keyvault secret set --vault-name ${var.keyvault_name} \
+        --name "redis-password" \
+        --value "${var.redis_password}" \
+        --output none
+
+      echo "Redis credentials stored in Key Vault (${var.keyvault_name})"
+    EOT
+    interpreter = ["/bin/sh", "-c"]
+  }
+
+  depends_on = [module.redis, module.osdu_common]
+}

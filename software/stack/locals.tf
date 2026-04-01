@@ -37,7 +37,7 @@ locals {
   elasticsearch_host = "elasticsearch-es-http.${local.platform_namespace}.svc.cluster.local"
   postgresql_host    = "postgresql-rw.${local.platform_namespace}.svc.cluster.local"
   redis_host         = "redis-master.${local.platform_namespace}.svc.cluster.local"
-  redis_port         = "6379"
+  redis_port         = "6380"
 
   # Ingress hostname derivation
   kibana_hostname      = var.ingress_prefix != "" && var.dns_zone_name != "" ? "${var.ingress_prefix}-kibana.${var.dns_zone_name}" : ""

@@ -13,7 +13,40 @@
 # limitations under the License.
 
 # In-cluster Redis (Bitnami replication: 1 master + 2 replicas)
-# Single write endpoint: redis-master.<namespace>.svc.cluster.local:6379
+# TLS enabled via cert-manager (required by OSDU services that hardcode SSL)
+# Single write endpoint: redis-master.<namespace>.svc.cluster.local:6380
+
+resource "kubectl_manifest" "redis_selfsigned_issuer" {
+  yaml_body = <<-YAML
+    apiVersion: cert-manager.io/v1
+    kind: Issuer
+    metadata:
+      name: redis-selfsigned
+      namespace: ${var.namespace}
+    spec:
+      selfSigned: {}
+  YAML
+}
+
+resource "kubectl_manifest" "redis_tls_cert" {
+  yaml_body = <<-YAML
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: redis-tls
+      namespace: ${var.namespace}
+    spec:
+      secretName: redis-tls-secret
+      dnsNames:
+        - redis-master.${var.namespace}.svc.cluster.local
+        - redis-replicas.${var.namespace}.svc.cluster.local
+      issuerRef:
+        name: redis-selfsigned
+        kind: Issuer
+  YAML
+
+  depends_on = [kubectl_manifest.redis_selfsigned_issuer]
+}
 
 resource "kubernetes_secret_v1" "redis_password" {
   metadata {
@@ -51,7 +84,17 @@ resource "helm_release" "redis" {
       existingSecret: redis-credentials
       existingSecretPasswordKey: redis-password
 
+    tls:
+      enabled: true
+      authClients: false
+      existingSecret: "redis-tls-secret"
+      certFilename: "tls.crt"
+      certKeyFilename: "tls.key"
+      certCAFilename: "ca.crt"
+
     master:
+      containerPorts:
+        redis: 6380
       replicaCount: 1
       persistence:
         enabled: true
@@ -103,6 +146,8 @@ resource "helm_release" "redis" {
               app.kubernetes.io/component: master
 
     replica:
+      containerPorts:
+        redis: 6380
       replicaCount: 2
       persistence:
         enabled: true
@@ -167,5 +212,5 @@ resource "helm_release" "redis" {
   YAML
   ]
 
-  depends_on = [kubernetes_secret_v1.redis_password]
+  depends_on = [kubernetes_secret_v1.redis_password, kubectl_manifest.redis_tls_cert]
 }

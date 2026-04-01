@@ -302,7 +302,15 @@ function Invoke-BootstrapAccess {
 }
 
 function Test-KubePermissions {
-    $maxWait = 180
+    $maxWait = 300
+    if ($env:RBAC_WAIT_TIMEOUT) {
+        if ([int]::TryParse($env:RBAC_WAIT_TIMEOUT, [ref]$maxWait)) {
+            Write-Host "  Using custom RBAC wait timeout: $maxWait`s" -ForegroundColor Gray
+        }
+        else {
+            $maxWait = 300
+        }
+    }
     $interval = 15
     $elapsed = 0
 

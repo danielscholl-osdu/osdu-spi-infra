@@ -69,17 +69,6 @@ module "entitlements" {
     { name = "PARTITION_SERVICE_ENDPOINT", value = "http://partition/api/partition/v1" },
   ]
 
-  probes = {
-    liveness = {
-      path = "/actuator/health", port = 8080
-      initialDelaySeconds = 150, periodSeconds = 10, timeoutSeconds = 5, failureThreshold = 3
-    }
-    readiness = {
-      path = "/actuator/health", port = 8080
-      initialDelaySeconds = 10, periodSeconds = 10, timeoutSeconds = 5, failureThreshold = 3
-    }
-  }
-
   preconditions = [
     { condition = !local.deploy_entitlements || local.deploy_partition, error_message = "Entitlements requires Partition." },
   ]

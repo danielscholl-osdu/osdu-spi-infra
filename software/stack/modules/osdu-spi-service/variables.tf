@@ -119,7 +119,7 @@ variable "probes" {
   default = {
     liveness = {
       path                = "/actuator/health"
-      port                = 8080
+      port                = 8081
       initialDelaySeconds = 250
       periodSeconds       = 10
       timeoutSeconds      = 5
@@ -127,7 +127,7 @@ variable "probes" {
     }
     readiness = {
       path                = "/actuator/health"
-      port                = 8080
+      port                = 8081
       initialDelaySeconds = 10
       periodSeconds       = 10
       timeoutSeconds      = 5
