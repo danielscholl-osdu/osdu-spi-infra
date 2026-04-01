@@ -52,19 +52,22 @@ resource "kubernetes_config_map_v1" "osdu_config" {
   }
 
   data = {
-    domain               = var.osdu_domain
-    data_partition       = var.data_partition
-    azure_tenant_id      = var.azure_tenant_id
-    keyvault_uri         = var.keyvault_uri
-    keyvault_name        = var.keyvault_name
-    cosmosdb_endpoint    = var.cosmosdb_endpoint
-    cosmosdb_database    = var.cosmosdb_database
-    storage_account_name = var.storage_account_name
-    servicebus_namespace = var.servicebus_namespace
-    redis_hostname       = var.redis_hostname
-    redis_port           = var.redis_port
-    appinsights_key      = var.appinsights_key
-    elasticsearch_host   = var.elasticsearch_host
+    DOMAIN               = var.osdu_domain
+    DATA_PARTITION       = var.data_partition
+    AZURE_TENANT_ID      = var.azure_tenant_id
+    AAD_CLIENT_ID        = var.workload_identity_client_id
+    KEYVAULT_URI         = var.keyvault_uri
+    KEYVAULT_URL         = var.keyvault_uri
+    KEYVAULT_NAME        = var.keyvault_name
+    COSMOSDB_ENDPOINT    = var.cosmosdb_endpoint
+    COSMOSDB_DATABASE    = var.cosmosdb_database
+    STORAGE_ACCOUNT_NAME = var.storage_account_name
+    SERVICEBUS_NAMESPACE = var.servicebus_namespace
+    REDIS_HOSTNAME       = var.redis_hostname
+    REDIS_PORT           = var.redis_port
+    SERVER_PORT          = "8080"
+    APPINSIGHTS_KEY      = var.appinsights_key
+    ELASTICSEARCH_HOST   = var.elasticsearch_host
   }
 
   lifecycle {
