@@ -51,6 +51,7 @@ software/stack/kustomize/services/*/all.yaml
 
 # Per-stack OSDU version overrides (instance-specific, not committed)
 software/stack/osdu-versions.auto.tfvars
+software/stack/osdu-images.auto.tfvars
 
 # Stack state files (per-instance, not committed)
 software/stack/.tfstate/
