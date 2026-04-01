@@ -1036,23 +1036,41 @@ function Show-PostProvisionSummary {
     Write-Host ""
 }
 function Clear-FailedHelmReleases {
-    Write-Host "  Checking for failed Helm releases in foundation namespace..." -ForegroundColor Gray
+    Write-Host "  Checking for stuck Helm releases in foundation namespace..." -ForegroundColor Gray
 
-    $releases = helm list -n foundation --failed --short 2>$null
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($releases)) {
-        Write-Host "  No failed releases found" -ForegroundColor Gray
+    # Catch releases in failed, uninstalling, or pending-* states
+    $allReleases = helm list -n foundation --all --output json 2>$null | ConvertFrom-Json
+    if ($null -eq $allReleases -or $allReleases.Count -eq 0) {
+        Write-Host "  No releases found" -ForegroundColor Gray
         return
     }
 
-    foreach ($release in ($releases -split "`n" | Where-Object { $_.Trim() -ne "" })) {
-        $release = $release.Trim()
-        Write-Host "  Removing failed release: $release" -ForegroundColor Yellow
-        helm uninstall $release -n foundation 2>&1 | Out-Null
+    $stuckReleases = $allReleases | Where-Object { $_.status -notin @("deployed", "superseded") }
+    if ($stuckReleases.Count -eq 0) {
+        Write-Host "  No stuck releases found" -ForegroundColor Gray
+        return
+    }
+
+    foreach ($rel in $stuckReleases) {
+        $name = $rel.name
+        $status = $rel.status
+        Write-Host "  Removing $status release: $name" -ForegroundColor Yellow
+
+        # Try normal uninstall first
+        helm uninstall $name -n foundation --no-hooks 2>&1 | Out-Null
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "  Removed: $release" -ForegroundColor Green
+            Write-Host "  Removed: $name" -ForegroundColor Green
+            continue
+        }
+
+        # If stuck in uninstalling state, delete the Helm secret directly
+        Write-Host "  Normal uninstall failed — clearing Helm secret for: $name" -ForegroundColor Yellow
+        kubectl delete secret -n foundation -l "name=$name,owner=helm" 2>&1 | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  Cleared: $name" -ForegroundColor Green
         }
         else {
-            Write-Host "  WARNING: Could not remove $release (may need manual cleanup)" -ForegroundColor Yellow
+            Write-Host "  WARNING: Could not remove $name (may need manual cleanup)" -ForegroundColor Yellow
         }
     }
 }
