@@ -12,13 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-output "elastic_password" {
-  description = "Elasticsearch elastic user password"
-  value       = var.enable_bootstrap ? data.kubernetes_secret_v1.elasticsearch_password[0].data["elastic"] : ""
-  sensitive   = true
-}
-
-output "elastic_ca_cert" {
-  description = "ECK self-signed CA certificate (PEM, base64-encoded)"
-  value       = var.enable_bootstrap ? data.kubernetes_secret_v1.elasticsearch_ca_cert[0].data["ca.crt"] : ""
-}
+# Outputs removed -- ES credentials no longer flow through Terraform.
+# The elastic-bootstrap chart reads the ECK secret directly via secretKeyRef.
+# The CA cert is copied cross-namespace by null_resource.copy_elastic_ca_cert
+# in the stack root (osdu-common.tf).

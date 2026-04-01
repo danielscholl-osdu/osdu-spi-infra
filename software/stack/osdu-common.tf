@@ -38,9 +38,96 @@ module "osdu_common" {
   redis_port           = local.redis_port
   appinsights_key      = var.appinsights_key
 
-  # Elasticsearch credentials from in-cluster ECK
-  enable_elasticsearch   = var.enable_elasticsearch && var.enable_elastic_bootstrap
-  elasticsearch_host     = local.elasticsearch_host
-  elasticsearch_password = var.enable_elasticsearch && var.enable_elastic_bootstrap ? module.elastic[0].elastic_password : ""
-  elasticsearch_ca_cert  = var.enable_elasticsearch && var.enable_elastic_bootstrap ? module.elastic[0].elastic_ca_cert : ""
+  # Elasticsearch host for ConfigMap (credentials handled separately)
+  enable_elasticsearch = var.enable_elasticsearch && var.enable_elastic_bootstrap
+  elasticsearch_host   = local.elasticsearch_host
+}
+
+# Copy the ECK CA cert from platform namespace to osdu namespace.
+# The osdu-spi-service chart mounts elastic-ca-cert for search/indexer TLS.
+# Uses kubectl instead of Terraform data sources to avoid timing issues
+# with ECK secret population during initial cluster bootstrap.
+resource "null_resource" "copy_elastic_ca_cert" {
+  count = var.enable_elasticsearch && var.enable_elastic_bootstrap && local.deploy_common ? 1 : 0
+
+  triggers = {
+    source_namespace = local.platform_namespace
+    target_namespace = local.osdu_namespace
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+      for i in $(seq 1 60); do
+        CA=$(kubectl get secret elasticsearch-es-http-certs-public \
+          -n ${local.platform_namespace} \
+          -o jsonpath='{.data.ca\.crt}' 2>/dev/null)
+        if [ -n "$CA" ]; then
+          echo "CA cert ready after $((i * 10))s"
+          kubectl create secret generic elastic-ca-cert \
+            --namespace=${local.osdu_namespace} \
+            --from-literal="ca.crt=$(echo "$CA" | base64 -d)" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          exit 0
+        fi
+        echo "Waiting for ES CA cert... attempt $i/60"
+        sleep 10
+      done
+      echo "ERROR: Timed out waiting for CA cert after 600s"
+      exit 1
+    EOT
+    interpreter = ["/bin/sh", "-c"]
+  }
+
+  depends_on = [module.elastic, module.osdu_common]
+}
+
+# Store Elasticsearch credentials in Key Vault for the partition service.
+# Search and indexer services retrieve ES credentials at runtime via the
+# partition service API, which reads them from Key Vault.
+resource "null_resource" "elastic_keyvault_secrets" {
+  count = var.enable_elasticsearch && var.enable_elastic_bootstrap && local.deploy_common ? 1 : 0
+
+  triggers = {
+    keyvault_name  = var.keyvault_name
+    data_partition = var.data_partition
+    elastic_host   = local.elasticsearch_host
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+      # Wait for ES password secret to be populated
+      for i in $(seq 1 60); do
+        PASS=$(kubectl get secret elasticsearch-es-elastic-user \
+          -n ${local.platform_namespace} \
+          -o jsonpath='{.data.elastic}' 2>/dev/null)
+        if [ -n "$PASS" ]; then
+          ELASTIC_PASS=$(echo "$PASS" | base64 -d)
+          echo "ES password ready after $((i * 10))s"
+
+          az keyvault secret set --vault-name ${var.keyvault_name} \
+            --name "${var.data_partition}-elastic-endpoint" \
+            --value "https://${local.elasticsearch_host}:9200" \
+            --output none
+          az keyvault secret set --vault-name ${var.keyvault_name} \
+            --name "${var.data_partition}-elastic-username" \
+            --value "elastic" \
+            --output none
+          az keyvault secret set --vault-name ${var.keyvault_name} \
+            --name "${var.data_partition}-elastic-password" \
+            --value "$ELASTIC_PASS" \
+            --output none
+
+          echo "ES credentials stored in Key Vault (${var.keyvault_name})"
+          exit 0
+        fi
+        echo "Waiting for ES password... attempt $i/60"
+        sleep 10
+      done
+      echo "ERROR: Timed out waiting for ES password after 600s"
+      exit 1
+    EOT
+    interpreter = ["/bin/sh", "-c"]
+  }
+
+  depends_on = [module.elastic, module.osdu_common]
 }

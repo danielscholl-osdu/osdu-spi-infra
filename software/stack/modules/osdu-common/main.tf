@@ -102,35 +102,6 @@ resource "kubernetes_service_account_v1" "workload_identity" {
   depends_on = [kubernetes_namespace_v1.osdu]
 }
 
-# ─── Elasticsearch credential secret ───────────────────────────────────────────
-
-resource "kubernetes_secret_v1" "elastic_credentials" {
-  count = var.enable_elasticsearch ? 1 : 0
-
-  metadata {
-    name      = "elastic-credentials"
-    namespace = var.namespace
-  }
-
-  data = {
-    ELASTIC_USER_SYSTEM = "elastic"
-    ELASTIC_PASS_SYSTEM = var.elasticsearch_password
-  }
-
-  depends_on = [kubernetes_namespace_v1.osdu]
-}
-
-resource "kubernetes_secret_v1" "elastic_ca_cert" {
-  count = var.enable_elasticsearch ? 1 : 0
-
-  metadata {
-    name      = "elastic-ca-cert"
-    namespace = var.namespace
-  }
-
-  data = {
-    "ca.crt" = var.elasticsearch_ca_cert
-  }
-
-  depends_on = [kubernetes_namespace_v1.osdu]
-}
+# Elasticsearch secrets removed -- ES credentials no longer flow through Terraform.
+# The CA cert is copied cross-namespace by null_resource.copy_elastic_ca_cert
+# in the stack root (osdu-common.tf).
