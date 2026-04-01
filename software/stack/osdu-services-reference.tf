@@ -15,20 +15,28 @@
 # OSDU reference systems service deployments (Azure SPI variant)
 
 module "crs_conversion" {
-  source = "./modules/osdu-service"
+  source = "./modules/osdu-spi-service"
 
-  service_name                = "crs-conversion"
-  repository                  = "oci://community.opengroup.org:5555/osdu/platform/system/reference/crs-conversion-service/cimpl-helm"
-  chart                       = "core-plus-crs-conversion-deploy"
-  chart_version               = lookup(var.osdu_service_versions, "crs_conversion", var.osdu_chart_version)
-  enable                      = local.deploy_crs_conversion
-  enable_common               = local.deploy_common
-  namespace                   = local.osdu_namespace
-  osdu_domain                 = local.osdu_domain
-  data_partition              = var.data_partition
-  azure_tenant_id             = var.tenant_id
-  workload_identity_client_id = var.osdu_identity_client_id
-  kustomize_path              = path.module
+  service_name     = "crs-conversion"
+  image_repository = local.osdu_images["crs_conversion"].repository
+  image_tag        = local.osdu_images["crs_conversion"].tag
+  enable           = local.deploy_crs_conversion
+  enable_common    = local.deploy_common
+  namespace        = local.osdu_namespace
+
+  env = [
+    { name = "SPRING_APPLICATION_NAME", value = "crs-conversion-service" },
+    { name = "SERVER_SERVLET_CONTEXTPATH", value = "/api/crs/converter/" },
+
+    { name = "ACCEPT_HTTP", value = "true" },
+    { name = "AZURE_ISTIOAUTH_ENABLED", value = "true" },
+    { name = "AZURE_PAAS_WORKLOADIDENTITY_ISENABLED", value = "true" },
+    { name = "SERVICE_DOMAIN_NAME", value = "dataservices.energy" },
+    { name = "SIS_DATA", value = "/apachesis_setup/SIS_DATA" },
+    { name = "PARTITION_SERVICE_ENDPOINT", value = "http://partition/api/partition/v1" },
+    { name = "ENTITLEMENT_URL", value = "http://entitlements/api/entitlements/v2" },
+    { name = "STORAGE_URL", value = "http://storage/api/storage/v2" },
+  ]
 
   preconditions = [
     { condition = !local.deploy_crs_conversion || local.deploy_entitlements, error_message = "CRS Conversion requires Entitlements." },
@@ -39,20 +47,25 @@ module "crs_conversion" {
 }
 
 module "crs_catalog" {
-  source = "./modules/osdu-service"
+  source = "./modules/osdu-spi-service"
 
-  service_name                = "crs-catalog"
-  repository                  = "oci://community.opengroup.org:5555/osdu/platform/system/reference/crs-catalog-service/cimpl-helm"
-  chart                       = "core-plus-crs-catalog-deploy"
-  chart_version               = lookup(var.osdu_service_versions, "crs_catalog", var.osdu_chart_version)
-  enable                      = local.deploy_crs_catalog
-  enable_common               = local.deploy_common
-  namespace                   = local.osdu_namespace
-  osdu_domain                 = local.osdu_domain
-  data_partition              = var.data_partition
-  azure_tenant_id             = var.tenant_id
-  workload_identity_client_id = var.osdu_identity_client_id
-  kustomize_path              = path.module
+  service_name     = "crs-catalog"
+  image_repository = local.osdu_images["crs_catalog"].repository
+  image_tag        = local.osdu_images["crs_catalog"].tag
+  enable           = local.deploy_crs_catalog
+  enable_common    = local.deploy_common
+  namespace        = local.osdu_namespace
+
+  env = [
+    { name = "SPRING_APPLICATION_NAME", value = "crs-catalog" },
+    { name = "SERVER_SERVLET_CONTEXTPATH", value = "/api/crs/catalog/" },
+
+    { name = "ACCEPT_HTTP", value = "true" },
+    { name = "AZURE_ISTIOAUTH_ENABLED", value = "true" },
+    { name = "AZURE_PAAS_WORKLOADIDENTITY_ISENABLED", value = "true" },
+    { name = "PARTITION_SERVICE_ENDPOINT", value = "http://partition/api/partition/v1" },
+    { name = "ENTITLEMENT_URL", value = "http://entitlements/api/entitlements/v2" },
+  ]
 
   preconditions = [
     { condition = !local.deploy_crs_catalog || local.deploy_entitlements, error_message = "CRS Catalog requires Entitlements." },
@@ -63,20 +76,25 @@ module "crs_catalog" {
 }
 
 module "unit" {
-  source = "./modules/osdu-service"
+  source = "./modules/osdu-spi-service"
 
-  service_name                = "unit"
-  repository                  = "oci://community.opengroup.org:5555/osdu/platform/system/reference/unit-service/cimpl-helm"
-  chart                       = "core-plus-unit-deploy"
-  chart_version               = lookup(var.osdu_service_versions, "unit", var.osdu_chart_version)
-  enable                      = local.deploy_unit
-  enable_common               = local.deploy_common
-  namespace                   = local.osdu_namespace
-  osdu_domain                 = local.osdu_domain
-  data_partition              = var.data_partition
-  azure_tenant_id             = var.tenant_id
-  workload_identity_client_id = var.osdu_identity_client_id
-  kustomize_path              = path.module
+  service_name     = "unit"
+  image_repository = local.osdu_images["unit"].repository
+  image_tag        = local.osdu_images["unit"].tag
+  enable           = local.deploy_unit
+  enable_common    = local.deploy_common
+  namespace        = local.osdu_namespace
+
+  env = [
+    { name = "SPRING_APPLICATION_NAME", value = "unit" },
+    { name = "SERVER_SERVLET_CONTEXTPATH", value = "/api/unit/" },
+
+    { name = "ACCEPT_HTTP", value = "true" },
+    { name = "AZURE_ISTIOAUTH_ENABLED", value = "true" },
+    { name = "AZURE_PAAS_WORKLOADIDENTITY_ISENABLED", value = "true" },
+    { name = "PARTITION_SERVICE_ENDPOINT", value = "http://partition/api/partition/v1" },
+    { name = "ENTITLEMENT_URL", value = "http://entitlements/api/entitlements/v2" },
+  ]
 
   preconditions = [
     { condition = !local.deploy_unit || local.deploy_entitlements, error_message = "Unit requires Entitlements." },

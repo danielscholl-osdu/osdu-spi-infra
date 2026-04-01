@@ -22,7 +22,7 @@ resource "kubectl_manifest" "elasticsearch" {
       name: elasticsearch
       namespace: ${var.namespace}
     spec:
-      version: 8.15.2
+      version: 8.18.2
       http:
         service:
           spec:
@@ -122,7 +122,7 @@ resource "kubectl_manifest" "kibana" {
       name: kibana
       namespace: ${var.namespace}
     spec:
-      version: 8.15.2
+      version: 8.18.2
       count: 1
       elasticsearchRef:
         name: elasticsearch

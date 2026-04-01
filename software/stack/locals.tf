@@ -72,4 +72,28 @@ locals {
 
   # Middleware deploy flags
   deploy_postgresql_airflow = var.enable_airflow
+
+  # -- OSDU service image resolution ----------------------------------------
+  # Azure SPI images from the OSDU community registry. Image names follow the
+  # pattern: {service}-{branch}:{full_40char_git_sha}
+  # Per-service overrides via var.osdu_image_overrides take full precedence.
+  _osdu_image_defaults = {
+    partition      = { repository = "community.opengroup.org:5555/osdu/platform/system/partition/partition-${var.osdu_image_branch}", tag = "119bf4d9e25879e5f47206dcf24b4998ee4eb355" }
+    entitlements   = { repository = "community.opengroup.org:5555/osdu/platform/security-and-compliance/entitlements/entitlements-${var.osdu_image_branch}", tag = "0fb954f01c7ef59a68194c88dec4d8d166d0b48e" }
+    legal          = { repository = "community.opengroup.org:5555/osdu/platform/security-and-compliance/legal/legal-${var.osdu_image_branch}", tag = "2e82d5975a49564b64574190e492af403164637d" }
+    schema         = { repository = "community.opengroup.org:5555/osdu/platform/system/schema-service/schema-service-${var.osdu_image_branch}", tag = "868023373a2f7550d9f3e850d06434838eeeb2b4" }
+    storage        = { repository = "community.opengroup.org:5555/osdu/platform/system/storage/storage-${var.osdu_image_branch}", tag = "13d0a957c558dd109dd1bb4fb705de583cdc295c" }
+    search         = { repository = "community.opengroup.org:5555/osdu/platform/system/search-service/search-service-${var.osdu_image_branch}", tag = "1756362704ad9ee2b63c83562cebcd9abd233e26" }
+    indexer        = { repository = "community.opengroup.org:5555/osdu/platform/system/indexer-service/indexer-service-${var.osdu_image_branch}", tag = "4a2bd12e73f914460c93aade608287d16e42e2ce" }
+    indexer_queue  = { repository = "community.opengroup.org:5555/osdu/platform/system/indexer-queue/indexer-queue-${var.osdu_image_branch}", tag = "1ad21add706aecd9d1762998113d5976443a4d57" }
+    file           = { repository = "community.opengroup.org:5555/osdu/platform/system/file/file-${var.osdu_image_branch}", tag = "2b149c5ec48451034fbc2562c7cbe622f41843d1" }
+    workflow       = { repository = "community.opengroup.org:5555/osdu/platform/data-flow/ingestion/ingestion-workflow/ingestion-workflow-${var.osdu_image_branch}", tag = "13fbcfce32601edbfc1c10a1994f8af5a388436f" }
+    crs_conversion = { repository = "community.opengroup.org:5555/osdu/platform/system/reference/crs-conversion-service/crs-conversion-service-${var.osdu_image_branch}", tag = "43adf2bef10e3e6d3980b4ff74f78e1aff0c2880" }
+    crs_catalog    = { repository = "community.opengroup.org:5555/osdu/platform/system/reference/crs-catalog-service/crs-catalog-service-${var.osdu_image_branch}", tag = "49761e5b20118a9998b4a2a88d6e57eddd4d745e" }
+    unit           = { repository = "community.opengroup.org:5555/osdu/platform/system/reference/unit-service/unit-service-${var.osdu_image_branch}", tag = "2fdf7e3c4674f87ad0d556e0f1f6da458dac2b18" }
+  }
+
+  osdu_images = {
+    for svc, defaults in local._osdu_image_defaults : svc => lookup(var.osdu_image_overrides, svc, defaults)
+  }
 }

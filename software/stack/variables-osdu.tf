@@ -14,17 +14,19 @@
 
 # OSDU configuration variables (Azure SPI variant)
 
-# OSDU version management
-variable "osdu_chart_version" {
-  description = "Default OSDU Helm chart version for all services"
+variable "osdu_image_branch" {
+  description = "Branch suffix appended to OSDU image repository names (e.g. 'master', 'release-0-27')"
   type        = string
-  default     = "0.0.7-latest"
+  default     = "master"
 }
 
-variable "osdu_service_versions" {
-  description = "Per-service version overrides (service_name -> chart_version)"
-  type        = map(string)
-  default     = {}
+variable "osdu_image_overrides" {
+  description = "Per-service image overrides (service key -> {repository, tag})"
+  type = map(object({
+    repository = string
+    tag        = string
+  }))
+  default = {}
 }
 
 variable "osdu_airflow_version" {
