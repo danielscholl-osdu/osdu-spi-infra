@@ -24,18 +24,24 @@
 locals {
   platform_namespace = var.stack_id != "" ? "platform-${var.stack_id}" : "platform"
   osdu_namespace     = var.stack_id != "" ? "osdu-${var.stack_id}" : "osdu"
+  stack_label        = var.stack_id != "" ? var.stack_id : "default"
+
+  # Karpenter resource names (can contain hyphens)
   nodepool_name      = var.stack_id != "" ? "platform-${var.stack_id}" : "platform"
   osdu_nodepool_name = var.stack_id != "" ? "osdu-${var.stack_id}" : "osdu"
-  stack_label        = var.stack_id != "" ? var.stack_id : "default"
+
+  # Agentpool label/taint values (no hyphens — AKS Karpenter restriction)
+  nodepool_label      = var.stack_id != "" ? "platform${var.stack_id}" : "platform"
+  osdu_nodepool_label = var.stack_id != "" ? "osdu${var.stack_id}" : "osdu"
 
   # Node scheduling for OSDU services — when nodepool isolation is enabled,
   # pods get a nodeSelector and toleration targeting the dedicated OSDU pool.
   osdu_node_scheduling = var.enable_nodepool ? {
-    nodeSelector = { "agentpool" = local.osdu_nodepool_name }
+    nodeSelector = { "agentpool" = local.osdu_nodepool_label }
     tolerations = [{
       key      = "workload"
       operator = "Equal"
-      value    = local.osdu_nodepool_name
+      value    = local.osdu_nodepool_label
       effect   = "NoSchedule"
     }]
     } : {

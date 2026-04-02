@@ -22,7 +22,7 @@ module "elastic" {
   enable_bootstrap     = var.enable_elastic_bootstrap
   kibana_hostname      = local.kibana_hostname
   has_ingress_hostname = local.has_ingress_hostname
-  nodepool_name        = local.nodepool_name
+  nodepool_name        = local.nodepool_label
 }
 
 module "postgresql" {
@@ -35,7 +35,7 @@ module "postgresql" {
   keycloak_db_password = var.keycloak_db_password
   airflow_db_password  = var.airflow_db_password
   cimpl_tenant         = var.cimpl_tenant
-  nodepool_name        = local.nodepool_name
+  nodepool_name        = local.nodepool_label
 }
 
 module "redis" {
@@ -44,7 +44,7 @@ module "redis" {
 
   namespace      = kubernetes_namespace_v1.platform.metadata[0].name
   redis_password = var.redis_password
-  nodepool_name  = local.nodepool_name
+  nodepool_name  = local.nodepool_label
 }
 
 module "rabbitmq" {
@@ -55,7 +55,7 @@ module "rabbitmq" {
   rabbitmq_username      = var.rabbitmq_username
   rabbitmq_password      = var.rabbitmq_password
   rabbitmq_erlang_cookie = var.rabbitmq_erlang_cookie
-  nodepool_name          = local.nodepool_name
+  nodepool_name          = local.nodepool_label
 }
 
 module "minio" {
@@ -77,7 +77,7 @@ module "keycloak" {
   keycloak_admin_password = var.keycloak_admin_password
   datafier_client_secret  = var.datafier_client_secret
   osdu_namespace          = local.osdu_namespace
-  nodepool_name           = local.nodepool_name
+  nodepool_name           = local.nodepool_label
 
   depends_on = [module.postgresql]
 }
@@ -96,7 +96,7 @@ module "airflow" {
   osdu_ingestion_version = var.osdu_ingestion_version
   osdu_api_version       = var.osdu_api_version
   osdu_dags_branch       = var.osdu_dags_branch
-  nodepool_name          = local.nodepool_name
+  nodepool_name          = local.nodepool_label
 
   depends_on = [module.postgresql]
 }

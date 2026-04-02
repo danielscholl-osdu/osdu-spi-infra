@@ -52,11 +52,11 @@ resource "kubectl_manifest" "karpenter_nodepool" {
       template:
         metadata:
           labels:
-            agentpool: ${local.nodepool_name}
+            agentpool: ${local.nodepool_label}
         spec:
           taints:
             - key: workload
-              value: "${local.nodepool_name}"
+              value: "${local.nodepool_label}"
               effect: NoSchedule
           requirements:
             - key: karpenter.azure.com/sku-family
@@ -125,11 +125,11 @@ resource "kubectl_manifest" "karpenter_nodepool_osdu" {
       template:
         metadata:
           labels:
-            agentpool: ${local.osdu_nodepool_name}
+            agentpool: ${local.osdu_nodepool_label}
         spec:
           taints:
             - key: workload
-              value: "${local.osdu_nodepool_name}"
+              value: "${local.osdu_nodepool_label}"
               effect: NoSchedule
           requirements:
             - key: karpenter.azure.com/sku-family
