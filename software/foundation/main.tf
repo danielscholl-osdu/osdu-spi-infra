@@ -217,6 +217,26 @@ resource "kubectl_manifest" "elastic_storage_class" {
   YAML
 }
 
+resource "kubectl_manifest" "rabbitmq_storage_class" {
+  yaml_body = <<-YAML
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: rabbitmq-storageclass
+      labels:
+        app: rabbitmq
+    parameters:
+      skuName: Premium_LRS
+      kind: Managed
+      cachingMode: ReadOnly
+      tags: costcenter=dev,app=rabbitmq
+    provisioner: disk.csi.azure.com
+    reclaimPolicy: Retain
+    volumeBindingMode: WaitForFirstConsumer
+    allowVolumeExpansion: true
+  YAML
+}
+
 # State migration: renamed deprecated types to _v1 equivalents
 moved {
   from = kubernetes_namespace.platform

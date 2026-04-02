@@ -458,10 +458,24 @@ function Reset-DeploymentState {
 }
 
 function Set-Credentials {
+    # SPI stack credentials
     $secrets = @(
         @{ Name = "TF_VAR_redis_password" }
         @{ Name = "TF_VAR_postgresql_password" }
         @{ Name = "TF_VAR_airflow_db_password" }
+    )
+
+    # CIMPL stack credentials
+    $secrets += @(
+        @{ Name = "CIMPL_REDIS_PASSWORD" }
+        @{ Name = "CIMPL_POSTGRESQL_PASSWORD" }
+        @{ Name = "CIMPL_AIRFLOW_DB_PASSWORD" }
+        @{ Name = "CIMPL_KEYCLOAK_DB_PASSWORD" }
+        @{ Name = "CIMPL_KEYCLOAK_ADMIN_PASSWORD" }
+        @{ Name = "CIMPL_DATAFIER_CLIENT_SECRET"; Length = 32 }
+        @{ Name = "CIMPL_RABBITMQ_PASSWORD" }
+        @{ Name = "CIMPL_RABBITMQ_ERLANG_COOKIE"; Length = 32 }
+        @{ Name = "CIMPL_MINIO_ROOT_PASSWORD" }
     )
 
     foreach ($s in $secrets) {
