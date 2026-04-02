@@ -63,6 +63,12 @@ variable "elastic_tls" {
   default     = false
 }
 
+variable "redis_tls" {
+  description = "Enable Redis TLS -- import self-signed CA into Java truststore"
+  type        = bool
+  default     = false
+}
+
 variable "istio_proxy_pin" {
   description = "Pin Istio sidecar proxy to a specific version"
   type        = bool

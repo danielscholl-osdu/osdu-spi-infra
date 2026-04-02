@@ -20,6 +20,12 @@ variable "stack_id" {
   default     = ""
 }
 
+variable "istio_revision" {
+  description = "AKS managed Istio revision label (e.g. asm-1-28). Determines sidecar injection."
+  type        = string
+  default     = "asm-1-28"
+}
+
 variable "kubeconfig_path" {
   description = "Path to kubeconfig file"
   type        = string

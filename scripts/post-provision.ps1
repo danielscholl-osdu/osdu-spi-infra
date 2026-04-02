@@ -520,7 +520,8 @@ function Set-Safeguards {
 
     $excludedNsList = @(
         "kube-system", "gatekeeper-system", "foundation",
-        "elasticsearch", "aks-istio-ingress"
+        "elasticsearch", "aks-istio-ingress",
+        "osdu", "platform"
     )
 
     $maxRetries = 3

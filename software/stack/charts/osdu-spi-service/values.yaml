@@ -80,6 +80,9 @@ workloadIdentity: true
 # -- Elasticsearch TLS init container (for search/indexer)
 elasticTls: false
 
+# -- Redis TLS -- import self-signed CA into Java truststore
+redisTls: false
+
 # -- Topology spread constraints
 topologySpread: true
 

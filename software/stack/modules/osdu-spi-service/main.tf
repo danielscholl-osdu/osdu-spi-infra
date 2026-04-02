@@ -41,6 +41,7 @@ resource "helm_release" "service" {
     workloadIdentity   = true
     topologySpread     = true
     elasticTls         = var.elastic_tls
+    redisTls           = var.redis_tls
     istioProxyPin = {
       enabled = var.istio_proxy_pin
       image   = "mcr.microsoft.com/oss/v2/istio/proxyv2:v1.28.3-2"

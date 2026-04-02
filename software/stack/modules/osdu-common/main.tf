@@ -20,9 +20,6 @@
 resource "kubernetes_namespace_v1" "osdu" {
   metadata {
     name = var.namespace
-    labels = {
-      "istio-injection" = "enabled"
-    }
   }
 }
 
@@ -33,11 +30,46 @@ resource "kubectl_manifest" "osdu_peer_authentication" {
     apiVersion: security.istio.io/v1
     kind: PeerAuthentication
     metadata:
-      name: osdu-strict-mtls
+      name: osdu-mtls
       namespace: ${var.namespace}
     spec:
       mtls:
-        mode: STRICT
+        mode: PERMISSIVE
+  YAML
+
+  depends_on = [kubernetes_namespace_v1.osdu]
+}
+
+# ─── Istio JWT Authentication ──────────────────────────────────────────────────
+# Validates Azure AD tokens (v1 + v2 issuers) at the sidecar level.
+
+resource "kubectl_manifest" "request_authentication" {
+  yaml_body = <<-YAML
+    apiVersion: security.istio.io/v1
+    kind: RequestAuthentication
+    metadata:
+      name: req-authn-for-all
+      namespace: ${var.namespace}
+    spec:
+      jwtRules:
+        - issuer: "https://sts.windows.net/${var.azure_tenant_id}/"
+          jwksUri: "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+          audiences:
+            - "${var.workload_identity_client_id}"
+          outputPayloadToHeader: "x-payload"
+          forwardOriginalToken: true
+          fromHeaders:
+            - name: Authorization
+              prefix: "Bearer "
+        - issuer: "https://login.microsoftonline.com/${var.azure_tenant_id}/v2.0"
+          jwksUri: "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+          audiences:
+            - "${var.workload_identity_client_id}"
+          outputPayloadToHeader: "x-payload"
+          forwardOriginalToken: true
+          fromHeaders:
+            - name: Authorization
+              prefix: "Bearer "
   YAML
 
   depends_on = [kubernetes_namespace_v1.osdu]

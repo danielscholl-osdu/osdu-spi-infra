@@ -22,6 +22,7 @@ module "osdu_common" {
   namespace      = local.osdu_namespace
   osdu_domain    = local.osdu_domain
   data_partition = var.data_partition
+  istio_revision = var.istio_revision
 
   # Azure identity
   azure_tenant_id             = var.tenant_id
@@ -130,6 +131,63 @@ resource "null_resource" "elastic_keyvault_secrets" {
   }
 
   depends_on = [module.elastic, module.osdu_common]
+}
+
+# Copy the Redis CA cert from platform namespace to osdu namespace.
+# The osdu-spi-service chart imports redis-ca-cert into the Java truststore.
+resource "null_resource" "copy_redis_ca_cert" {
+  count = var.enable_redis && local.deploy_common ? 1 : 0
+
+  triggers = {
+    source_namespace = local.platform_namespace
+    target_namespace = local.osdu_namespace
+  }
+
+  provisioner "local-exec" {
+    command     = <<-EOT
+      for i in $(seq 1 30); do
+        CA=$(kubectl get secret redis-tls-secret \
+          -n ${local.platform_namespace} \
+          -o jsonpath='{.data.ca\.crt}' 2>/dev/null)
+        if [ -n "$CA" ]; then
+          echo "Redis CA cert ready after $((i * 5))s"
+          kubectl create secret generic redis-ca-cert \
+            --namespace=${local.osdu_namespace} \
+            --from-literal="ca.crt=$(echo "$CA" | base64 -d)" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          exit 0
+        fi
+        echo "Waiting for Redis CA cert... attempt $i/30"
+        sleep 5
+      done
+      echo "ERROR: Timed out waiting for Redis CA cert after 150s"
+      exit 1
+    EOT
+    interpreter = ["/bin/sh", "-c"]
+  }
+
+  depends_on = [module.redis, module.osdu_common]
+}
+
+# Disable Istio mTLS for Redis traffic from OSDU services.
+# Lettuce speaks TLS directly to Redis; Istio must not add mTLS on top.
+resource "kubectl_manifest" "redis_destination_rule" {
+  count = var.enable_redis && local.deploy_common ? 1 : 0
+
+  yaml_body = <<-YAML
+    apiVersion: networking.istio.io/v1
+    kind: DestinationRule
+    metadata:
+      name: redis-disable-mtls
+      namespace: ${local.osdu_namespace}
+    spec:
+      host: "redis-master.${local.platform_namespace}.svc.cluster.local"
+      trafficPolicy:
+        tls:
+          mode: DISABLE
+  YAML
+
+  depends_on = [module.osdu_common]
 }
 
 # Indexer and workflow services retrieve Redis connection details at runtime

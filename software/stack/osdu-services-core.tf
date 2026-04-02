@@ -29,6 +29,7 @@ module "partition" {
   enable           = local.deploy_partition
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  redis_tls        = true
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "partition" },
@@ -53,6 +54,7 @@ module "entitlements" {
   enable           = local.deploy_entitlements
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  redis_tls        = true
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "entitlements" },
@@ -85,6 +87,7 @@ module "legal" {
   enable           = local.deploy_legal
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  redis_tls        = true
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "legal" },
@@ -122,6 +125,7 @@ module "schema" {
   enable           = local.deploy_schema
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  redis_tls        = true
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "schema" },
@@ -159,6 +163,7 @@ module "storage" {
   enable           = local.deploy_storage
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  redis_tls        = true
   istio_proxy_pin  = true
 
   env = [
@@ -205,6 +210,7 @@ module "search" {
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
   elastic_tls      = true
+  redis_tls        = true
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "search" },
@@ -245,6 +251,7 @@ module "indexer" {
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
   elastic_tls      = true
+  redis_tls        = true
   istio_proxy_pin  = true
 
   env = [
@@ -309,6 +316,7 @@ module "indexer_queue" {
     { name = "PARTITION_API", value = "http://partition/api/partition/v1" },
     { name = "INDEXER_WORKER_URL", value = "http://indexer/api/indexer/v2/_dps/task-handlers/index-worker" },
     { name = "schema_worker_url", value = "http://indexer/api/indexer/v2/_dps/task-handlers/schema-worker" },
+    { name = "AZURE_APP_RESOURCE_ID", value = var.osdu_identity_client_id },
   ]
 
   preconditions = [
@@ -328,6 +336,7 @@ module "file" {
   enable           = local.deploy_file
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  redis_tls        = true
   istio_proxy_pin  = true
 
   env = [
@@ -372,6 +381,7 @@ module "workflow" {
   enable           = local.deploy_workflow
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  redis_tls        = true
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "workflow" },

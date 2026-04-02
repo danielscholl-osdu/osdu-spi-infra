@@ -19,6 +19,12 @@ variable "namespace" {
   type        = string
 }
 
+variable "istio_revision" {
+  description = "AKS managed Istio revision label (e.g. asm-1-28)"
+  type        = string
+  default     = "asm-1-28"
+}
+
 variable "osdu_domain" {
   description = "OSDU domain (e.g. prefix.dnszone)"
   type        = string

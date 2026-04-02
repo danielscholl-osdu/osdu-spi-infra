@@ -13,9 +13,11 @@
 # limitations under the License.
 
 # In-cluster Redis (Bitnami replication: 1 master + 2 replicas)
-# TLS enabled via cert-manager (required by OSDU services that hardcode SSL)
+# TLS enabled via cert-manager -- core-lib-azure hardcodes ssl=true
+# in RedisClientFactory so TLS is mandatory.
 # Single write endpoint: redis-master.<namespace>.svc.cluster.local:6380
 
+# Self-signed CA for Redis TLS certificates
 resource "kubectl_manifest" "redis_selfsigned_issuer" {
   yaml_body = <<-YAML
     apiVersion: cert-manager.io/v1
@@ -36,9 +38,15 @@ resource "kubectl_manifest" "redis_tls_cert" {
       name: redis-tls
       namespace: ${var.namespace}
     spec:
+      commonName: redis
+      isCA: true
       secretName: redis-tls-secret
       dnsNames:
+        - redis-master
+        - redis-master.${var.namespace}
         - redis-master.${var.namespace}.svc.cluster.local
+        - redis-replicas
+        - redis-replicas.${var.namespace}
         - redis-replicas.${var.namespace}.svc.cluster.local
       issuerRef:
         name: redis-selfsigned
@@ -46,6 +54,24 @@ resource "kubectl_manifest" "redis_tls_cert" {
   YAML
 
   depends_on = [kubectl_manifest.redis_selfsigned_issuer]
+}
+
+# Disable Istio mTLS for Redis -- Lettuce speaks TLS directly to Redis,
+# so Istio should not add another mTLS layer on top.
+resource "kubectl_manifest" "redis_peer_authentication" {
+  yaml_body = <<-YAML
+    apiVersion: security.istio.io/v1
+    kind: PeerAuthentication
+    metadata:
+      name: redis-disable-mtls
+      namespace: ${var.namespace}
+    spec:
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: redis
+      mtls:
+        mode: DISABLE
+  YAML
 }
 
 resource "kubernetes_secret_v1" "redis_password" {
@@ -95,6 +121,9 @@ resource "helm_release" "redis" {
     master:
       containerPorts:
         redis: 6380
+      service:
+        ports:
+          redis: 6380
       replicaCount: 1
       persistence:
         enabled: true
@@ -148,6 +177,9 @@ resource "helm_release" "redis" {
     replica:
       containerPorts:
         redis: 6380
+      service:
+        ports:
+          redis: 6380
       replicaCount: 2
       persistence:
         enabled: true

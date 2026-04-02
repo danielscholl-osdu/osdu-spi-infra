@@ -55,22 +55,35 @@ spec:
               {{- include "osdu-spi-service.selectorLabels" . | nindent 14 }}
       {{- end }}
 
-      {{- if or .Values.elasticTls .Values.initContainers }}
+      {{- if or .Values.elasticTls .Values.redisTls .Values.initContainers }}
       initContainers:
-        {{- if .Values.elasticTls }}
-        - name: import-elastic-ca
+        {{- if or .Values.elasticTls .Values.redisTls }}
+        - name: import-ca-certs
           image: eclipse-temurin:17-jre-alpine
           command:
             - sh
             - -c
             - |
               cp $JAVA_HOME/lib/security/cacerts /truststore/cacerts
+              {{- if .Values.elasticTls }}
               keytool -importcert -noprompt -keystore /truststore/cacerts \
                 -storepass changeit -alias elastic-ca -file /elastic-ca/ca.crt
+              {{- end }}
+              {{- if .Values.redisTls }}
+              keytool -importcert -noprompt -keystore /truststore/cacerts \
+                -storepass changeit -alias redis-ca -file /redis-ca/ca.crt
+              {{- end }}
           volumeMounts:
+            {{- if .Values.elasticTls }}
             - name: elastic-ca
               mountPath: /elastic-ca
               readOnly: true
+            {{- end }}
+            {{- if .Values.redisTls }}
+            - name: redis-ca
+              mountPath: /redis-ca
+              readOnly: true
+            {{- end }}
             - name: truststore
               mountPath: /truststore
           resources:
@@ -130,9 +143,9 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ .Values.configMapRef }}
-          {{- if or .Values.env .Values.elasticTls }}
+          {{- if or .Values.env .Values.elasticTls .Values.redisTls }}
           env:
-            {{- if .Values.elasticTls }}
+            {{- if or .Values.elasticTls .Values.redisTls }}
             - name: JAVA_TOOL_OPTIONS
               value: "-Djavax.net.ssl.trustStore=/truststore/cacerts -Djavax.net.ssl.trustStorePassword=changeit"
             {{- end }}
@@ -141,9 +154,9 @@ spec:
               value: {{ .value | quote }}
             {{- end }}
           {{- end }}
-          {{- if or .Values.elasticTls .Values.volumeMounts }}
+          {{- if or .Values.elasticTls .Values.redisTls .Values.volumeMounts }}
           volumeMounts:
-            {{- if .Values.elasticTls }}
+            {{- if or .Values.elasticTls .Values.redisTls }}
             - name: truststore
               mountPath: /truststore
               readOnly: true
@@ -153,12 +166,19 @@ spec:
             {{- end }}
           {{- end }}
 
-      {{- if or .Values.elasticTls .Values.volumes }}
+      {{- if or .Values.elasticTls .Values.redisTls .Values.volumes }}
       volumes:
         {{- if .Values.elasticTls }}
         - name: elastic-ca
           secret:
             secretName: elastic-ca-cert
+        {{- end }}
+        {{- if .Values.redisTls }}
+        - name: redis-ca
+          secret:
+            secretName: redis-ca-cert
+        {{- end }}
+        {{- if or .Values.elasticTls .Values.redisTls }}
         - name: truststore
           emptyDir: {}
         {{- end }}

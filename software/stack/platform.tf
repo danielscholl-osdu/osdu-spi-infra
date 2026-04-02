@@ -16,23 +16,22 @@
 resource "kubernetes_namespace_v1" "platform" {
   metadata {
     name = local.platform_namespace
-    labels = {
-      "istio-injection" = "enabled"
-    }
   }
 }
 
-# Istio STRICT mTLS for platform namespace
+# Istio PERMISSIVE mTLS for platform namespace
+# Platform namespace does NOT get Istio sidecar injection -- middleware
+# (Redis, Elastic, PostgreSQL) manages its own TLS.
 resource "kubectl_manifest" "platform_peer_authentication" {
   yaml_body = <<-YAML
     apiVersion: security.istio.io/v1
     kind: PeerAuthentication
     metadata:
-      name: platform-strict-mtls
+      name: platform-mtls
       namespace: ${local.platform_namespace}
     spec:
       mtls:
-        mode: STRICT
+        mode: PERMISSIVE
   YAML
 
   depends_on = [kubernetes_namespace_v1.platform]
