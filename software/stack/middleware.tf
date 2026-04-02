@@ -55,6 +55,7 @@ module "airflow" {
   airflow_db_password         = var.airflow_db_password
   workload_identity_client_id = var.osdu_identity_client_id
   azure_tenant_id             = var.tenant_id
+  keyvault_uri                = var.keyvault_uri
   dag_storage_account_name    = var.storage_account_name
 
   osdu_airflow_version   = var.osdu_airflow_version
@@ -99,6 +100,18 @@ module "gateway" {
     local.deploy_unit ? [{ path_prefix = "/api/unit/", service_name = "unit" }] : [],
     local.deploy_crs_conversion ? [{ path_prefix = "/api/crs/converter/", service_name = "crs-conversion" }] : [],
     local.deploy_crs_catalog ? [{ path_prefix = "/api/crs/catalog/", service_name = "crs-catalog" }] : [],
+
+    # Core extended services
+    local.deploy_notification ? [{ path_prefix = "/api/notification/", service_name = "notification" }] : [],
+    local.deploy_dataset ? [{ path_prefix = "/api/dataset/", service_name = "dataset" }] : [],
+    local.deploy_register ? [{ path_prefix = "/api/register/", service_name = "register" }] : [],
+    local.deploy_policy ? [{ path_prefix = "/api/policy/", service_name = "policy" }] : [],
+    local.deploy_secret ? [{ path_prefix = "/api/secret/", service_name = "secret" }] : [],
+
+    # DDMS services
+    local.deploy_wellbore ? [{ path_prefix = "/api/os-wellbore-ddms/", service_name = "wellbore" }] : [],
+    local.deploy_eds_dms ? [{ path_prefix = "/api/eds/", service_name = "eds-dms" }] : [],
+    local.deploy_oetp_server ? [{ path_prefix = "/api/oetp/", service_name = "oetp-server" }] : [],
   ) : []
 
   depends_on = [module.elastic, module.airflow, module.osdu_common]

@@ -85,3 +85,33 @@ variable "enable_workflow" {
   type        = bool
   default     = true
 }
+
+variable "enable_notification" {
+  description = "Enable OSDU Notification service deployment"
+  type        = bool
+  default     = true
+}
+
+variable "enable_dataset" {
+  description = "Enable OSDU Dataset service deployment"
+  type        = bool
+  default     = true
+}
+
+variable "enable_register" {
+  description = "Enable OSDU Register service deployment"
+  type        = bool
+  default     = true
+}
+
+variable "enable_policy" {
+  description = "Enable OSDU Policy service deployment"
+  type        = bool
+  default     = true
+}
+
+variable "enable_secret" {
+  description = "Enable OSDU Secret service deployment (disabled: upstream image has Reactor Netty classpath conflict)"
+  type        = bool
+  default     = false
+}

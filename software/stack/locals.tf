@@ -64,11 +64,23 @@ locals {
   deploy_indexer_queue = local._osdu_core && var.enable_indexer_queue
   deploy_file          = local._osdu_core && var.enable_file
   deploy_workflow      = local._osdu_core && var.enable_workflow
+  deploy_notification  = local._osdu_core && var.enable_notification
+  deploy_dataset       = local._osdu_core && var.enable_dataset
+  deploy_register      = local._osdu_core && var.enable_register
+  deploy_policy        = local._osdu_core && var.enable_policy
+  deploy_secret        = local._osdu_core && var.enable_secret
 
   # Reference services (group + individual)
   deploy_unit           = local._osdu_reference && var.enable_unit
   deploy_crs_conversion = local._osdu_reference && var.enable_crs_conversion
   deploy_crs_catalog    = local._osdu_reference && var.enable_crs_catalog
+
+  # DDMS services (group + individual)
+  _osdu_ddms             = local._osdu_core && var.enable_osdu_ddms_services
+  deploy_wellbore        = local._osdu_ddms && var.enable_wellbore
+  deploy_wellbore_worker = local._osdu_ddms && var.enable_wellbore_worker
+  deploy_eds_dms         = local._osdu_ddms && var.enable_eds_dms
+  deploy_oetp_server     = local._osdu_ddms && var.enable_oetp_server
 
   # Middleware deploy flags
   deploy_postgresql_airflow = var.enable_airflow
@@ -91,6 +103,19 @@ locals {
     crs_conversion = { repository = "community.opengroup.org:5555/osdu/platform/system/reference/crs-conversion-service/crs-conversion-service-${var.osdu_image_branch}", tag = "43adf2bef10e3e6d3980b4ff74f78e1aff0c2880" }
     crs_catalog    = { repository = "community.opengroup.org:5555/osdu/platform/system/reference/crs-catalog-service/crs-catalog-service-${var.osdu_image_branch}", tag = "49761e5b20118a9998b4a2a88d6e57eddd4d745e" }
     unit           = { repository = "community.opengroup.org:5555/osdu/platform/system/reference/unit-service/unit-service-${var.osdu_image_branch}", tag = "2fdf7e3c4674f87ad0d556e0f1f6da458dac2b18" }
+
+    # Core extended services
+    notification = { repository = "community.opengroup.org:5555/osdu/platform/system/notification/notification-${var.osdu_image_branch}", tag = "latest" }
+    dataset      = { repository = "community.opengroup.org:5555/osdu/platform/system/dataset/dataset-${var.osdu_image_branch}", tag = "latest" }
+    register     = { repository = "community.opengroup.org:5555/osdu/platform/system/register/register-${var.osdu_image_branch}", tag = "latest" }
+    policy       = { repository = "community.opengroup.org:5555/osdu/platform/security-and-compliance/policy/policy-${var.osdu_image_branch}", tag = "latest" }
+    secret       = { repository = "community.opengroup.org:5555/osdu/platform/security-and-compliance/secret/secret-main", tag = "latest" }
+
+    # DDMS services
+    wellbore        = { repository = "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services/wellbore-domain-services-${var.osdu_image_branch}", tag = "latest" }
+    wellbore_worker = { repository = "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/wellbore/wellbore-domain-services-worker/wellbore-domain-services-worker-main", tag = "latest" }
+    eds_dms         = { repository = "community.opengroup.org:5555/osdu/platform/data-flow/ingestion/external-data-sources/eds-dms/eds-dms-${var.osdu_image_branch}", tag = "latest" }
+    oetp_server     = { repository = "community.opengroup.org:5555/osdu/platform/domain-data-mgmt-services/reservoir/open-etp-server/open-etp-server-main", tag = "latest" }
   }
 
   osdu_images = {

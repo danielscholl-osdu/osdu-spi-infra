@@ -1,13 +1,17 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Render OSDU DAG templates ({| |} markers) with baremetal provider values.
+    Render OSDU DAG templates ({| |} markers) with Azure SPI provider values.
 
 .DESCRIPTION
     The upstream OSDU repos use {| VAR |} (Jinja custom delimiters) so that
     Airflow's own {{ }} template expressions pass through unmodified.  This
-    script replaces {| |} markers with baremetal-appropriate values and injects
-    required Python imports (os, k8s_models).
+    script replaces {| |} markers with Azure-appropriate values and injects
+    required Python imports (k8s_models).
+
+    Azure SPI variant: uses CLOUD_PROVIDER=azure with workload identity
+    authentication on spawned KubernetesPodOperator pods. No Keycloak or
+    MinIO references.
 
 .PARAMETER DagsDir
     Path to directory containing DAG .py files.
@@ -33,7 +37,6 @@ $ErrorActionPreference = 'Stop'
 
 # ---------------------------------------------------------------------------
 # sub: replace  {| VAR_NAME |}  or  {| VAR_NAME|default(...) |}  with a value
-# Matches the perl regex: s/\{|.*?\bVAR\b.*?\|}/REPLACEMENT/g
 # ---------------------------------------------------------------------------
 function Invoke-TemplateSub {
     param(
@@ -43,8 +46,6 @@ function Invoke-TemplateSub {
     )
     $content = Get-Content -Path $FilePath -Raw
     $pattern = "\{\|.*?\b$VarName\b.*?\|\}"
-    # [regex]::Replace treats the replacement string as literal except for
-    # $-group references ($1, $&, etc.), so we only need to escape $.
     $safeValue = $Value -replace '\$', '$$$$'
     $content = [regex]::Replace($content, $pattern, $safeValue)
     Set-Content -Path $FilePath -Value $content -NoNewline
@@ -52,12 +53,11 @@ function Invoke-TemplateSub {
 
 # ---------------------------------------------------------------------------
 # Inject import lines before the first airflow import line.
-# Equivalent to: perl -pi -e 'print "IMPORTS\n" if /^(import|from) airflow/ && !$done++'
 # ---------------------------------------------------------------------------
 function Invoke-InjectImports {
     param(
         [string[]]$ImportLines,
-        [string]$AirflowPattern,   # e.g. '^import airflow' or '^from airflow'
+        [string]$AirflowPattern,
         [string]$FilePath
     )
     $lines = Get-Content -Path $FilePath
@@ -74,6 +74,15 @@ function Invoke-InjectImports {
     }
     Set-Content -Path $FilePath -Value $result
 }
+
+# ---------------------------------------------------------------------------
+# Shared KubernetesPodOperator kwargs for Azure SPI
+# Workload identity SA enables Azure AD token acquisition on spawned pods.
+# ---------------------------------------------------------------------------
+# K8S_POD_OPERATOR_KWARGS: used by DAGs that accept startup_timeout_seconds as a separate param
+$k8sPodKwargsStandard = '{"service_account_name":"workload-identity-sa","labels":{"azure.workload.identity/use":"true"},"container_resources":k8s_models.V1ResourceRequirements(limits={"memory":"1Gi","cpu":"1000m"},requests={"memory":"1Gi","cpu":"200m"}),"startup_timeout_seconds":300}'
+# K8S_POD_KWARGS: used by DAGs that pass kwargs directly to KubernetesPodOperator (no startup_timeout_seconds to avoid duplicates)
+$k8sPodKwargsLarge = '{"service_account_name":"workload-identity-sa","labels":{"azure.workload.identity/use":"true"},"container_resources":k8s_models.V1ResourceRequirements(limits={"memory":"8Gi","cpu":"1000m"},requests={"memory":"1Gi","cpu":"200m"})}'
 
 # ---------------------------------------------------------------------------
 # Main
@@ -109,24 +118,19 @@ foreach ($f in $pyFiles) {
                 -FilePath $filePath
 
             Invoke-TemplateSub -VarName 'K8S_POD_KWARGS' `
-                -Value '{"container_resources":k8s_models.V1ResourceRequirements(limits={"memory":"8Gi","cpu":"1000m"},requests={"memory":"1Gi","cpu":"200m"}),"annotations":{"sidecar.istio.io/inject":"false"}}' `
+                -Value $k8sPodKwargsLarge `
                 -FilePath $filePath
 
-            # ENV_VARS - baremetal uses os.getenv() for Keycloak/MinIO secrets
-            $envVars = '{"CLOUD_PROVIDER":"baremetal",' +
+            $envVars = '{"CLOUD_PROVIDER":"azure",' +
                 '"OSDU_ANTHOS_STORAGE_URL":"{{ var.value.core__service__storage__url }}",' +
                 '"OSDU_ANTHOS_DATASET_URL":"{{ var.value.core__service__dataset__url }}",' +
-                '"OSDU_ANTHOS_DATA_PARTITION":"{{ dag_run.conf[''execution_context''][''Payload''][''data-partition-id''] }}",' +
-                '"KEYCLOAK_AUTH_URL":os.getenv("KEYCLOAK_AUTH_URL",""),' +
-                '"KEYCLOAK_CLIENT_ID":os.getenv("KEYCLOAK_CLIENT_ID",""),' +
-                '"KEYCLOAK_CLIENT_SECRET":os.getenv("KEYCLOAK_CLIENT_SECRET","")}'
+                '"OSDU_ANTHOS_DATA_PARTITION":"{{ dag_run.conf[''execution_context''][''Payload''][''data-partition-id''] }}"}'
             Invoke-TemplateSub -VarName 'ENV_VARS' `
                 -Value $envVars `
                 -FilePath $filePath
 
-            # Inject imports before first airflow import
             Invoke-InjectImports `
-                -ImportLines @('import os', 'from kubernetes.client import models as k8s_models') `
+                -ImportLines @('from kubernetes.client import models as k8s_models') `
                 -AirflowPattern '^import airflow' `
                 -FilePath $filePath
 
@@ -147,10 +151,10 @@ foreach ($f in $pyFiles) {
                 -FilePath $filePath
 
             Invoke-TemplateSub -VarName 'K8S_POD_OPERATOR_KWARGS' `
-                -Value '{"container_resources":k8s_models.V1ResourceRequirements(limits={"memory":"1Gi","cpu":"1000m"},requests={"memory":"1Gi","cpu":"200m"}),"annotations":{"sidecar.istio.io/inject":"false"},"startup_timeout_seconds":300}' `
+                -Value $k8sPodKwargsStandard `
                 -FilePath $filePath
 
-            $envVars = '{"CLOUD_PROVIDER":"baremetal",' +
+            $envVars = '{"CLOUD_PROVIDER":"azure",' +
                 '"STORAGE_URL":"{{ var.value.core__service__storage__url }}",' +
                 '"SCHEMA_URL":"{{ var.value.core__service__schema__url }}",' +
                 '"SEARCH_URL":"{{ var.value.core__service__search__url }}",' +
@@ -159,16 +163,13 @@ foreach ($f in $pyFiles) {
                 '"FILE_URL":"{{ var.value.core__service__file__host }}",' +
                 '"DATASET_URL":"{{ var.value.core__service__dataset__url }}",' +
                 '"WORKFLOW_URL":"{{ var.value.core__service__workflow__url }}",' +
-                '"data_service_to_use":"file",' +
-                '"KEYCLOAK_CLIENT_ID":os.getenv("KEYCLOAK_CLIENT_ID",""),' +
-                '"KEYCLOAK_CLIENT_SECRET":os.getenv("KEYCLOAK_CLIENT_SECRET",""),' +
-                '"CSV_PARSER_KEYCLOAK_AUTH_URL":os.getenv("KEYCLOAK_AUTH_URL","")}'
+                '"data_service_to_use":"file"}'
             Invoke-TemplateSub -VarName 'ENV_VARS' `
                 -Value $envVars `
                 -FilePath $filePath
 
             Invoke-InjectImports `
-                -ImportLines @('import os', 'from kubernetes.client import models as k8s_models') `
+                -ImportLines @('from kubernetes.client import models as k8s_models') `
                 -AirflowPattern '^import airflow' `
                 -FilePath $filePath
         }
@@ -191,11 +192,12 @@ foreach ($f in $pyFiles) {
                 -FilePath $filePath
 
             Invoke-TemplateSub -VarName 'K8S_POD_OPERATOR_KWARGS' `
-                -Value '{"container_resources":k8s_models.V1ResourceRequirements(limits={"memory":"1Gi","cpu":"1000m"},requests={"memory":"1Gi","cpu":"200m"}),"annotations":{"sidecar.istio.io/inject":"false"},"startup_timeout_seconds":300}' `
+                -Value $k8sPodKwargsStandard `
                 -FilePath $filePath
 
+            # No MinIO -- Azure Storage is used via the OSDU storage service
             Invoke-TemplateSub -VarName 'EXTRA_ENV_VARS' `
-                -Value '{"S3_ENDPOINT_OVERRIDE":"{{ var.value.core__service__minio__url }}"}' `
+                -Value '{}' `
                 -FilePath $filePath
 
             Invoke-InjectImports `
@@ -219,11 +221,12 @@ foreach ($f in $pyFiles) {
                 -FilePath $filePath
 
             Invoke-TemplateSub -VarName 'K8S_POD_KWARGS' `
-                -Value '{"container_resources":k8s_models.V1ResourceRequirements(limits={"memory":"8Gi","cpu":"1000m"},requests={"memory":"2Gi","cpu":"200m"}),"annotations":{"sidecar.istio.io/inject":"false"},"startup_timeout_seconds":300}' `
+                -Value $k8sPodKwargsLarge `
                 -FilePath $filePath
 
+            # No MinIO -- Azure Storage is used via the OSDU storage service
             Invoke-TemplateSub -VarName 'EXTRA_ENV_VARS' `
-                -Value '{"S3_ENDPOINT_OVERRIDE":"{{ var.value.core__service__minio__url }}"}' `
+                -Value '{}' `
                 -FilePath $filePath
 
             Invoke-InjectImports `

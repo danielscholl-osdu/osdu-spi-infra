@@ -50,6 +50,12 @@ variable "azure_tenant_id" {
   default     = ""
 }
 
+variable "keyvault_uri" {
+  description = "Azure Key Vault URI for OSDU secrets"
+  type        = string
+  default     = ""
+}
+
 # Azure Blob CSI for DAG storage
 
 variable "dag_storage_account_name" {

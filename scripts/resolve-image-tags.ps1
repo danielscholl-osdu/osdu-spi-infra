@@ -55,6 +55,19 @@ $ImageRegistry = [ordered]@{
     crs_conversion = @{ project_id = 22;   image = "crs-conversion-service" }
     crs_catalog    = @{ project_id = 21;   image = "crs-catalog-service" }
     unit           = @{ project_id = 5;    image = "unit-service" }
+
+    # Core extended services
+    notification    = @{ project_id = 143;  image = "notification" }
+    dataset         = @{ project_id = 118;  image = "dataset" }
+    register        = @{ project_id = 157;  image = "register" }
+    policy          = @{ project_id = 420;  image = "policy" }
+    secret          = @{ project_id = 723;  image = "secret"; branch = "main" }
+
+    # DDMS services
+    wellbore        = @{ project_id = 98;   image = "wellbore-domain-services" }
+    wellbore_worker = @{ project_id = 1384; image = "wellbore-domain-services-worker"; branch = "main" }
+    eds_dms         = @{ project_id = 1247; image = "eds-dms" }
+    oetp_server     = @{ project_id = 828;  image = "open-etp-server"; branch = "main" }
 }
 
 $Branch = if ($env:OSDU_IMAGE_BRANCH) { $env:OSDU_IMAGE_BRANCH } else { "master" }
@@ -71,7 +84,8 @@ $Errors = @()
 
 foreach ($svc in $ImageRegistry.Keys) {
     $entry = $ImageRegistry[$svc]
-    $imageName = "$($entry.image)-$Branch"
+    $svcBranch = if ($entry.ContainsKey("branch")) { $entry.branch } else { $Branch }
+    $imageName = "$($entry.image)-$svcBranch"
 
     try {
         # List registry repositories for this project

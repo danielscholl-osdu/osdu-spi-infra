@@ -560,6 +560,24 @@ resource "helm_release" "airflow" {
             runAsUser: 50000
             allowPrivilegeEscalation: false
 
+    # KubernetesExecutor task pods inherit workload identity for Azure auth
+    kubernetesPodTemplate:
+      serviceAccount:
+        name: airflow-sa
+      podAnnotations:
+        azure.workload.identity/inject-proxy-sidecar: "false"
+      labels:
+        azure.workload.identity/use: "true"
+      extraEnvs:
+        - name: CLOUD_PROVIDER
+          value: "azure"
+        - name: AZURE_TENANT_ID
+          value: "${var.azure_tenant_id}"
+        - name: AZURE_CLIENT_ID
+          value: "${var.workload_identity_client_id}"
+        - name: KEYVAULT_URI
+          value: "${var.keyvault_uri}"
+
     statsd:
       enabled: false
   YAML
