@@ -97,7 +97,7 @@ module "wellbore_worker" {
 
   probes = {
     liveness = {
-      path                = "/api/os-wellbore-ddms/worker/about"
+      path                = "/about"
       port                = 8080
       initialDelaySeconds = 30
       periodSeconds       = 10
@@ -105,7 +105,7 @@ module "wellbore_worker" {
       failureThreshold    = 6
     }
     readiness = {
-      path                = "/api/os-wellbore-ddms/worker/about"
+      path                = "/about"
       port                = 8080
       initialDelaySeconds = 10
       periodSeconds       = 10

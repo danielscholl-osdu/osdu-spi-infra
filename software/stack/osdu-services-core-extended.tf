@@ -69,6 +69,7 @@ module "notification" {
     { name = "executor_n_threads", value = "32" },
     { name = "max_concurrent_calls", value = "32" },
     { name = "max_lock_renew_duration_seconds", value = "600" },
+    { name = "initial_subscription_manager_delay_seconds", value = "0" },
   ]
 
   preconditions = [
