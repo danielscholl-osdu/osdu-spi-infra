@@ -138,6 +138,9 @@ resource "kubectl_manifest" "karpenter_nodepool_osdu" {
             - key: karpenter.azure.com/sku-cpu
               operator: In
               values: ["4", "8"]
+            - key: karpenter.azure.com/sku-memory
+              operator: Gt
+              values: ["15"]
             - key: karpenter.azure.com/sku-storage-premium-capable
               operator: In
               values: ["true"]
@@ -159,7 +162,7 @@ resource "kubectl_manifest" "karpenter_nodepool_osdu" {
         consolidateAfter: 5m
       limits:
         cpu: "32"
-        memory: 128Gi
+        memory: 256Gi
   YAML
 
   wait = true

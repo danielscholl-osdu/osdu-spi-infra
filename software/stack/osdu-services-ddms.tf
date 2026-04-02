@@ -29,8 +29,12 @@ module "wellbore" {
   node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
-  # Wellbore is a Python FastAPI service — uses CLOUD_PROVIDER and SERVICE_HOST_* env vars
+  # Wellbore is a Python FastAPI service — lighter than Java services
   container_port = 8080
+  resources = {
+    requests = { cpu = "50m", memory = "256Mi" }
+    limits   = { cpu = "500m", memory = "512Mi" }
+  }
 
   env = [
     { name = "CLOUD_PROVIDER", value = "az" },
@@ -84,8 +88,12 @@ module "wellbore_worker" {
   node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
-  # Wellbore worker is also Python FastAPI
+  # Wellbore worker is also Python FastAPI — lighter than Java services
   container_port = 8080
+  resources = {
+    requests = { cpu = "50m", memory = "192Mi" }
+    limits   = { cpu = "500m", memory = "512Mi" }
+  }
 
   env = [
     { name = "CLOUD_PROVIDER", value = "az" },

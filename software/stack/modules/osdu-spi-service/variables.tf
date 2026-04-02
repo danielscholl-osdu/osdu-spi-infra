@@ -97,8 +97,8 @@ variable "resources" {
     })
   })
   default = {
-    requests = { cpu = "200m", memory = "512Mi" }
-    limits   = { cpu = "1", memory = "1Gi" }
+    requests = { cpu = "50m", memory = "640Mi" }
+    limits   = { cpu = "1", memory = "1536Mi" }
   }
 }
 
