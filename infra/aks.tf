@@ -15,7 +15,7 @@
 # AKS Automatic Cluster using Azure Verified Module
 module "aks" {
   source  = "Azure/avm-res-containerservice-managedcluster/azurerm"
-  version = "0.4.3"
+  version = "0.5.3"
 
   name      = local.cluster_name
   location  = var.location
