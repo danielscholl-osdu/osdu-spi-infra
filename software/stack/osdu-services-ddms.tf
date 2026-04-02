@@ -150,6 +150,10 @@ module "eds_dms" {
     { name = "AUTHORIZE_API", value = "http://entitlements/api/entitlements/v2" },
     { name = "AUTHORIZE_API_KEY", value = "OBSOLETE" },
     { name = "PARTITION_API", value = "http://partition/api/partition/v1" },
+    { name = "STORAGE_API", value = "http://storage/api/storage/v2" },
+    { name = "SCHEMA_API", value = "http://schema/api/schema-service/v1" },
+    { name = "DATASET_API", value = "http://dataset/api/dataset/v1" },
+    { name = "SEARCH_API", value = "http://search/api/search/v2" },
   ]
 
   preconditions = [
