@@ -28,25 +28,7 @@ module "notification" {
   namespace        = local.osdu_namespace
   redis_tls        = true
 
-  # Notification uses port 8080 with a service-specific info endpoint
-  probes = {
-    liveness = {
-      path                = "/api/notification/v1/info"
-      port                = 8080
-      initialDelaySeconds = 250
-      periodSeconds       = 10
-      timeoutSeconds      = 5
-      failureThreshold    = 3
-    }
-    readiness = {
-      path                = "/api/notification/v1/info"
-      port                = 8080
-      initialDelaySeconds = 10
-      periodSeconds       = 10
-      timeoutSeconds      = 5
-      failureThreshold    = 3
-    }
-  }
+  # Notification runs Undertow on port 8080 (app) and 8081 (management/actuator)
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "notification" },
@@ -71,6 +53,7 @@ module "notification" {
     { name = "max_lock_renew_duration_seconds", value = "600" },
     { name = "initial_subscription_manager_delay_seconds", value = "0" },
     { name = "consecutive_subscription_manager_delay_seconds", value = "120" },
+    { name = "LOG_PREFIX", value = "notification" },
   ]
 
   preconditions = [
