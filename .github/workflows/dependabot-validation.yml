@@ -33,7 +33,8 @@ jobs:
               infra/*) echo "infra" ;;
               infra-access/*) echo "infra-access" ;;
               software/foundation/*) echo "software/foundation" ;;
-              software/stack/*) echo "software/stack" ;;
+              software/spi-stack/*) echo "software/spi-stack" ;;
+              software/cimpl-stack/*) echo "software/cimpl-stack" ;;
             esac
           done | sort -u > /tmp/tf-dirs.txt
 

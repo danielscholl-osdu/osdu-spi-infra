@@ -237,12 +237,23 @@ function Clear-TerraformState {
     }
 
     # Clear stack layer state (config-driven stack)
-    $stateDir = "$PSScriptRoot/../software/stack/.tfstate"
+    $stateDir = "$PSScriptRoot/../software/spi-stack/.tfstate"
     if (Test-Path $stateDir) {
         $stateItems = Get-ChildItem -Path $stateDir -Filter "*.tfstate*" -ErrorAction SilentlyContinue
         foreach ($item in $stateItems) {
             Remove-Item -Path $item.FullName -Force
             Write-Host "  Removed: stack/.tfstate/$($item.Name)" -ForegroundColor Gray
+            $cleared = $true
+        }
+    }
+
+    # Clear cimpl-stack layer state
+    $cimplStateDir = "$PSScriptRoot/../software/cimpl-stack/.tfstate"
+    if (Test-Path $cimplStateDir) {
+        $stateItems = Get-ChildItem -Path $cimplStateDir -Filter "*.tfstate*" -ErrorAction SilentlyContinue
+        foreach ($item in $stateItems) {
+            Remove-Item -Path $item.FullName -Force
+            Write-Host "  Removed: cimpl-stack/.tfstate/$($item.Name)" -ForegroundColor Gray
             $cleared = $true
         }
     }

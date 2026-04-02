@@ -67,7 +67,7 @@ updates:
           - "gavinbunney/kubectl"
 
   - package-ecosystem: "terraform"
-    directory: "/software/stack"
+    directory: "/software/spi-stack"
     schedule:
       interval: "weekly"
       day: "monday"

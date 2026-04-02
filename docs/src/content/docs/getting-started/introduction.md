@@ -20,7 +20,8 @@ Layer 1:  infra/              Azure resources (AKS + PaaS)         ~15 min
 Layer 1a: infra-access/       Privileged RBAC bootstrap            ~1 min
 Layer 2:  software/foundation/ Cluster operators (cert-manager,     ~3 min
                                ECK, CNPG, ExternalDNS, Gateway API)
-Layer 3:  software/stack/      Middleware + OSDU services           ~5 min
+Layer 3:  software/spi-stack/   SPI middleware + OSDU services       ~5 min
+Layer 3a: software/cimpl-stack/ CIMPL middleware + OSDU services    ~8 min
 ```
 
 Each layer has its own lifecycle — infrastructure changes don't re-evaluate application releases, and the stack can be redeployed independently in ~5 minutes.

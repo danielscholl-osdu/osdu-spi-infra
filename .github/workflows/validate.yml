@@ -34,8 +34,10 @@ jobs:
               - 'infra-access/**'
             foundation:
               - 'software/foundation/**'
-            stack:
-              - 'software/stack/**'
+            spi-stack:
+              - 'software/spi-stack/**'
+            cimpl-stack:
+              - 'software/cimpl-stack/**'
 
   terraform-fmt:
     runs-on: ubuntu-latest
@@ -65,9 +67,12 @@ jobs:
           - name: foundation
             path: software/foundation
             changed: ${{ needs.detect-changes.outputs.foundation }}
-          - name: stack
-            path: software/stack
-            changed: ${{ needs.detect-changes.outputs.stack }}
+          - name: spi-stack
+            path: software/spi-stack
+            changed: ${{ needs.detect-changes.outputs.spi-stack }}
+          - name: cimpl-stack
+            path: software/cimpl-stack
+            changed: ${{ needs.detect-changes.outputs.cimpl-stack }}
     steps:
       - uses: actions/checkout@v4
         if: ${{ matrix.changed == 'true' }}

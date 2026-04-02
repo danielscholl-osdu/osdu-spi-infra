@@ -5,7 +5,7 @@
 
 .DESCRIPTION
   Queries the OSDU OCI registry for each service chart and writes resolved versions
-  to software/stack/osdu-versions.auto.tfvars for Terraform consumption.
+  to software/spi-stack/osdu-versions.auto.tfvars for Terraform consumption.
 
   Version modes:
     - Default (no env var)           : Uses "0.0.7-latest" tag (latest main branch CI build)
@@ -31,7 +31,7 @@
 #>
 
 param(
-    [string]$OutputDir = "$PSScriptRoot/../software/stack"
+    [string]$OutputDir = "$PSScriptRoot/../software/spi-stack"
 )
 
 Set-StrictMode -Version Latest

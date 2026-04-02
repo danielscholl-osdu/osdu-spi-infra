@@ -20,7 +20,8 @@ See the [Prerequisites](https://danielscholl-osdu.github.io/osdu-spi-infra/getti
    cd infra && terraform init -backend=false && terraform validate && cd ..
    cd infra-access && terraform init -backend=false && terraform validate && cd ..
    cd software/foundation && terraform init -backend=false && terraform validate && cd ../..
-   cd software/stack && terraform init -backend=false && terraform validate && cd ../..
+   cd software/spi-stack && terraform init -backend=false && terraform validate && cd ../..
+   cd software/cimpl-stack && terraform init -backend=false && terraform validate && cd ../..
 
    # Docs build
    cd docs && npm ci && npm run build && cd ..
