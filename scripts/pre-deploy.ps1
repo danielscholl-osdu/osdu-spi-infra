@@ -588,7 +588,7 @@ function Get-CimplVars {
     # CIMPL-specific credentials
     $postgresqlPassword = Get-AzdValue -Name "CIMPL_POSTGRESQL_PASSWORD"
     $postgresqlUsername = Get-AzdValue -Name "CIMPL_POSTGRESQL_USERNAME"
-    if ([string]::IsNullOrEmpty($postgresqlUsername)) { $postgresqlUsername = "cimpl" }
+    if ([string]::IsNullOrEmpty($postgresqlUsername)) { $postgresqlUsername = "osdu" }
     $keycloakDbPassword = Get-AzdValue -Name "CIMPL_KEYCLOAK_DB_PASSWORD"
     $keycloakAdminPassword = Get-AzdValue -Name "CIMPL_KEYCLOAK_ADMIN_PASSWORD"
     $datafierClientSecret = Get-AzdValue -Name "CIMPL_DATAFIER_CLIENT_SECRET"
