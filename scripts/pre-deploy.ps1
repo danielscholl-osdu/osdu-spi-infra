@@ -797,9 +797,34 @@ if ($postProvisionReady -ne "true") {
 }
 
 Connect-Cluster -Ctx $ctx
-$enableCimpl = Get-AzdValue -Name "ENABLE_CIMPL_STACK"
 
-if ($enableCimpl -eq "true") {
+# ─── Stack enable flags ──────────────────────────────────────────────────
+# Both default to "true". Set to "false" to disable a stack.
+$enableSpi = Get-AzdValue -Name "ENABLE_SPI_STACK"
+if ([string]::IsNullOrEmpty($enableSpi)) { $enableSpi = "true" }
+$enableCimpl = Get-AzdValue -Name "ENABLE_CIMPL_STACK"
+if ([string]::IsNullOrEmpty($enableCimpl)) { $enableCimpl = "true" }
+
+$deploySpi   = $enableSpi -eq "true"
+$deployCimpl = $enableCimpl -eq "true"
+
+if (-not $deploySpi -and -not $deployCimpl) {
+    Write-Host ""
+    Write-Host "  No stacks enabled (ENABLE_SPI_STACK=$enableSpi, ENABLE_CIMPL_STACK=$enableCimpl)" -ForegroundColor Yellow
+    Write-Host "  Nothing to deploy." -ForegroundColor Yellow
+    exit 0
+}
+
+Write-Host "  SPI stack:   $(if ($deploySpi) { 'enabled' } else { 'disabled' })" -ForegroundColor Gray
+Write-Host "  CIMPL stack: $(if ($deployCimpl) { 'enabled' } else { 'disabled' })" -ForegroundColor Gray
+
+# Ensure Helm repo caches (shared by both stacks)
+Write-Host "  Updating Helm repository caches..." -ForegroundColor Gray
+helm repo add apache-airflow https://airflow.apache.org 2>&1 | Out-Null
+helm repo update 2>&1 | Out-Null
+Write-Host "  Helm repos ready" -ForegroundColor Green
+
+if ($deploySpi -and $deployCimpl) {
     # ─── Parallel deployment: SPI + CIMPL ────────────────────────────────
     # Both stacks deploy simultaneously. To avoid Gateway listener races,
     # we pre-compute each stack's HTTPS listeners and pass them to the other
@@ -815,7 +840,6 @@ if ($enableCimpl -eq "true") {
     $cimplVars = Get-CimplVars -Ctx $ctx
 
     # Pre-compute cross-stack Gateway listeners as JSON
-    # Each stack passes these as additional_listeners so both Gateway specs converge.
     $spiListeners = Build-GatewayListeners -IngressPrefix $vars.IngressPrefix -DnsZoneName $vars.DnsZoneName `
         -StackLabel $(if ([string]::IsNullOrEmpty($stackName)) { "default" } else { $stackName }) `
         -Namespace $(if ([string]::IsNullOrEmpty($stackName)) { "platform" } else { "platform-$stackName" }) `
@@ -823,15 +847,6 @@ if ($enableCimpl -eq "true") {
     $cimplListeners = Build-GatewayListeners -IngressPrefix $cimplVars.IngressPrefix -DnsZoneName $cimplVars.DnsZoneName `
         -StackLabel "cimpl" -Namespace "platform-cimpl" `
         -IncludeKeycloak $true -EnableAirflow $true
-
-    Write-Host "  SPI listeners: $($spiListeners | ConvertFrom-Json | Measure-Object).Count" -ForegroundColor Gray
-    Write-Host "  CIMPL listeners: $($cimplListeners | ConvertFrom-Json | Measure-Object).Count" -ForegroundColor Gray
-
-    # Ensure Helm repo caches before parallel runs (shared cache)
-    Write-Host "  Updating Helm repository caches..." -ForegroundColor Gray
-    helm repo add apache-airflow https://airflow.apache.org 2>&1 | Out-Null
-    helm repo update 2>&1 | Out-Null
-    Write-Host "  Helm repos ready" -ForegroundColor Green
 
     # Write cross-listener JSON to temp files (avoids quoting issues in -var)
     $spiListenerFile = [System.IO.Path]::GetTempFileName()
@@ -847,7 +862,6 @@ if ($enableCimpl -eq "true") {
 
         $ErrorActionPreference = "Stop"
 
-        $displayName = if ([string]::IsNullOrEmpty($StackName)) { "default" } else { $StackName }
         $stateFile = if ([string]::IsNullOrEmpty($StackName)) { "default" } else { $StackName }
         $platformNs = if ([string]::IsNullOrEmpty($StackName)) { "platform" } else { "platform-$StackName" }
         $osduNs = if ([string]::IsNullOrEmpty($StackName)) { "osdu" } else { "osdu-$StackName" }
@@ -1035,13 +1049,20 @@ if ($enableCimpl -eq "true") {
     Test-CimplDeployment -Vars $cimplVars
     Show-CimplSummary -Ctx $ctx -Vars $cimplVars
 
-} else {
-    # ─── Sequential: SPI-only deployment ─────────────────────────────────
+} elseif ($deploySpi) {
+    # ─── SPI-only deployment ─────────────────────────────────────────────
     $stackName = Get-StackName
     $vars = Get-PlatformVars -Ctx $ctx
     Deploy-Stack -Ctx $ctx -Vars $vars -StackName $stackName
     $ip = Test-Deployment -Vars $vars -StackName $stackName
     Show-Summary -Ctx $ctx -Vars $vars -ExternalIp $ip -StackName $stackName
+
+} elseif ($deployCimpl) {
+    # ─── CIMPL-only deployment ───────────────────────────────────────────
+    $cimplVars = Get-CimplVars -Ctx $ctx
+    Deploy-CimplStack -Ctx $ctx -Vars $cimplVars
+    Test-CimplDeployment -Vars $cimplVars
+    Show-CimplSummary -Ctx $ctx -Vars $cimplVars
 }
 
 exit 0
