@@ -1,0 +1,53 @@
+---
+title: OSDU SPI Infrastructure
+description: Infrastructure as Code for deploying the OSDU Azure SPI on AKS Automatic
+template: splash
+hero:
+  tagline: Terraform + Helm on AKS Automatic — Azure PaaS for data, in-cluster for compute.
+  actions:
+    - text: Get Started
+      link: /osdu-spi-infra/getting-started/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/danielscholl-osdu/osdu-spi-infra
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What is this?
+
+Infrastructure as Code for deploying the **OSDU Azure SPI** (Service Provider Interface) on **AKS Automatic**. A single `azd up` command provisions Azure PaaS resources, bootstraps cluster operators, and deploys the full OSDU service stack.
+
+<CardGrid stagger>
+  <Card title="Three-Layer Architecture" icon="setting">
+    Independent Terraform states for infrastructure, foundation operators, and application stacks — each with its own lifecycle and blast radius.
+  </Card>
+  <Card title="Azure PaaS + In-Cluster" icon="rocket">
+    CosmosDB, Service Bus, and Storage for data durability. Elasticsearch, Redis, and PostgreSQL in-cluster for fast provisioning and low cost.
+  </Card>
+  <Card title="AKS Automatic" icon="approve-check-circle">
+    Managed Istio, Cilium networking, Deployment Safeguards, and Karpenter node auto-provisioning — hardened by default with no additional configuration.
+  </Card>
+  <Card title="One Command Deploy" icon="laptop">
+    Azure Developer CLI orchestrates all layers through lifecycle hooks. `azd up` to deploy, `azd down` to tear down.
+  </Card>
+</CardGrid>
+
+## Architecture at a Glance
+
+| In-Cluster | Azure PaaS |
+|---|---|
+| Elasticsearch (search/indexer) | CosmosDB (SQL + Gremlin) |
+| Redis (caching) | Azure Service Bus (messaging) |
+| PostgreSQL via CNPG (Airflow metadata) | Azure Storage (blob/table) |
+| Airflow (workflow orchestration) | Azure Key Vault (secrets) |
+| Istio service mesh (managed by AKS) | Azure Container Registry |
+| | Application Insights |
+
+## Who is it for?
+
+**Platform Engineers** deploying OSDU on Azure — stand up a running instance with `azd up`, tear it down with `azd down`.
+
+**Service Developers** who need their own OSDU environment to code against, deploy to, and test with.
