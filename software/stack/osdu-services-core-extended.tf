@@ -147,25 +147,7 @@ module "register" {
   namespace        = local.osdu_namespace
   redis_tls        = true
 
-  # Register uses port 8081 with /health/liveness path
-  probes = {
-    liveness = {
-      path                = "/health/liveness"
-      port                = 8081
-      initialDelaySeconds = 250
-      periodSeconds       = 10
-      timeoutSeconds      = 5
-      failureThreshold    = 3
-    }
-    readiness = {
-      path                = "/health/readiness"
-      port                = 8081
-      initialDelaySeconds = 10
-      periodSeconds       = 10
-      timeoutSeconds      = 5
-      failureThreshold    = 3
-    }
-  }
+  # Register runs on port 8081 with default actuator health endpoint
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "register" },
