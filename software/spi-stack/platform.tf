@@ -82,7 +82,7 @@ resource "kubectl_manifest" "karpenter_nodepool" {
             kind: AKSNodeClass
             name: platform
       disruption:
-        consolidationPolicy: WhenUnderutilized
+        consolidationPolicy: WhenEmptyOrUnderutilized
         consolidateAfter: 5m
       limits:
         cpu: "64"
@@ -98,7 +98,7 @@ resource "kubectl_manifest" "karpenter_aksnodeclass" {
   server_side_apply = true
 
   yaml_body = <<-YAML
-    apiVersion: karpenter.azure.com/v1alpha2
+    apiVersion: karpenter.azure.com/v1beta1
     kind: AKSNodeClass
     metadata:
       name: platform
@@ -158,7 +158,7 @@ resource "kubectl_manifest" "karpenter_nodepool_osdu" {
             kind: AKSNodeClass
             name: osdu
       disruption:
-        consolidationPolicy: WhenUnderutilized
+        consolidationPolicy: WhenEmptyOrUnderutilized
         consolidateAfter: 5m
       limits:
         cpu: "32"
@@ -174,7 +174,7 @@ resource "kubectl_manifest" "karpenter_aksnodeclass_osdu" {
   server_side_apply = true
 
   yaml_body = <<-YAML
-    apiVersion: karpenter.azure.com/v1alpha2
+    apiVersion: karpenter.azure.com/v1beta1
     kind: AKSNodeClass
     metadata:
       name: osdu
