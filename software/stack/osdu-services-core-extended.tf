@@ -87,10 +87,10 @@ module "dataset" {
   namespace        = local.osdu_namespace
   redis_tls        = true
 
-  # Dataset uses port 8081 with /health/liveness path
+  # Dataset runs on port 8081 with default actuator health endpoint
   probes = {
     liveness = {
-      path                = "/health/liveness"
+      path                = "/actuator/health"
       port                = 8081
       initialDelaySeconds = 250
       periodSeconds       = 10
@@ -98,7 +98,7 @@ module "dataset" {
       failureThreshold    = 3
     }
     readiness = {
-      path                = "/health/readiness"
+      path                = "/actuator/health"
       port                = 8081
       initialDelaySeconds = 10
       periodSeconds       = 10
