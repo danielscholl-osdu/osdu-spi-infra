@@ -177,6 +177,7 @@ module "register" {
     { name = "PARTITION_SERVICE_ENDPOINT", value = "http://partition/api/partition/v1" },
     { name = "ENTITLEMENTS_SERVICE_ENDPOINT", value = "http://entitlements/api/entitlements/v2" },
     { name = "ENTITLEMENTS_SERVICE_API_KEY", value = "OBSOLETE" },
+    { name = "ENTITLEMENTS_API", value = "http://entitlements/api/entitlements/v2" },
   ]
 
   preconditions = [
