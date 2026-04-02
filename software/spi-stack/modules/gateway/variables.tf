@@ -78,3 +78,9 @@ variable "osdu_api_routes" {
   }))
   default = []
 }
+
+variable "additional_listeners" {
+  description = "Additional Gateway listeners from other stacks (e.g., CIMPL) to include in the shared Gateway spec"
+  type        = list(any)
+  default     = []
+}

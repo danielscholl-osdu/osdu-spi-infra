@@ -97,6 +97,13 @@ variable "external_dns_client_id" {
   default     = ""
 }
 
+# Gateway side-by-side
+variable "cimpl_gateway_listeners" {
+  description = "Additional Gateway listeners from the CIMPL stack to include in the shared Gateway spec"
+  type        = list(any)
+  default     = []
+}
+
 # Tags
 variable "tags" {
   description = "Resource tags"

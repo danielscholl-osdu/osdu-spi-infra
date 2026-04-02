@@ -86,6 +86,9 @@ module "gateway" {
 
   active_cluster_issuer = local.active_cluster_issuer
 
+  # CIMPL listener passthrough for Gateway side-by-side
+  additional_listeners = var.cimpl_gateway_listeners
+
   # OSDU API path-based routes -- only for enabled services
   osdu_api_routes = var.enable_osdu_api_ingress ? concat(
     local.deploy_partition ? [{ path_prefix = "/api/partition/", service_name = "partition" }] : [],

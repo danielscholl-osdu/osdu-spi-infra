@@ -65,7 +65,8 @@ locals {
             }]
           }
           allowedRoutes = { namespaces = { from = "All" } }
-        }]
+        }],
+        var.additional_listeners
       )
     }
   }
