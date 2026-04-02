@@ -59,6 +59,7 @@ module "notification" {
     { name = "SERVICEBUS_TOPIC_NAME", value = "recordstopic" },
     { name = "REDIS_DATABASE", value = "6" },
     { name = "service_bus_enabled", value = "true" },
+    { name = "event_grid_enabled", value = "false" },
     { name = "event_grid_to_service_bus_enabled", value = "false" },
     { name = "PARTITION_SERVICE_ENDPOINT", value = "http://partition/api/partition/v1" },
     { name = "ENTITLEMENTS_SERVICE_ENDPOINT", value = "http://entitlements/api/entitlements/v2" },
