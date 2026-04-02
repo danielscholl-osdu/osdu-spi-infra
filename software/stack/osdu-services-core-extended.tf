@@ -178,6 +178,7 @@ module "register" {
     { name = "ENTITLEMENTS_SERVICE_ENDPOINT", value = "http://entitlements/api/entitlements/v2" },
     { name = "ENTITLEMENTS_SERVICE_API_KEY", value = "OBSOLETE" },
     { name = "ENTITLEMENTS_API", value = "http://entitlements/api/entitlements/v2" },
+    { name = "RECORDS_CHANGE_PUBSUB_ENDPOINT", value = "" },
   ]
 
   preconditions = [
