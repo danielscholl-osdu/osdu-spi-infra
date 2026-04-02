@@ -149,6 +149,7 @@ module "eds_dms" {
     { name = "KEY_VAULT_URL", value = var.keyvault_uri },
     { name = "AUTHORIZE_API", value = "http://entitlements/api/entitlements/v2" },
     { name = "AUTHORIZE_API_KEY", value = "OBSOLETE" },
+    { name = "PARTITION_API", value = "http://partition/api/partition/v1" },
   ]
 
   preconditions = [
