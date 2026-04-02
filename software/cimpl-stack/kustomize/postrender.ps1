@@ -6,7 +6,9 @@ param(
     [Parameter(Mandatory)]
     [string]$ServiceName,
 
-    [string]$ReleaseNamespace
+    [string]$ReleaseNamespace,
+
+    [string]$NodepoolName
 )
 
 $ErrorActionPreference = 'Stop'
@@ -61,6 +63,9 @@ try {
         $content = $content -replace '__SERVICE_NAME__', $ServiceName
         if ($ReleaseNamespace) {
             $content = $content -replace '__RELEASE_NAMESPACE__', $ReleaseNamespace
+        }
+        if ($NodepoolName) {
+            $content = $content -replace '__NODEPOOL_NAME__', $NodepoolName
         }
         [System.IO.File]::WriteAllText($_.FullName, $content)
     }

@@ -30,6 +30,7 @@ module "wellbore" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_wellbore || local.deploy_entitlements, error_message = "Wellbore requires Entitlements." },
@@ -56,6 +57,7 @@ module "wellbore_worker" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_wellbore_worker || local.deploy_entitlements, error_message = "Wellbore Worker requires Entitlements." },
@@ -81,6 +83,7 @@ module "eds_dms" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_eds_dms || local.deploy_entitlements, error_message = "EDS-DMS requires Entitlements." },
@@ -106,6 +109,7 @@ module "oetp_server" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   extra_set = [
     {

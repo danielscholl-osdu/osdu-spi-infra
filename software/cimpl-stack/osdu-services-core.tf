@@ -30,6 +30,7 @@ module "partition" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   extra_set = [
     {
@@ -60,6 +61,7 @@ module "entitlements" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_entitlements || var.enable_keycloak, error_message = "Entitlements requires Keycloak." },
@@ -85,6 +87,7 @@ module "legal" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   # Chart default image tag :64459360 does not exist for legal-status-update-master.
   # Override to the release image used by ROSA (qa/main/terraform/master-chart/variables.tf:724).
@@ -141,6 +144,7 @@ module "schema" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_schema || local.deploy_entitlements, error_message = "Schema requires Entitlements." },
@@ -166,6 +170,7 @@ module "storage" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_storage || local.deploy_legal, error_message = "Storage requires Legal." },
@@ -192,6 +197,7 @@ module "search" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   extra_set = []
 
@@ -220,6 +226,7 @@ module "indexer" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   extra_set = []
 
@@ -248,6 +255,7 @@ module "file" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_file || local.deploy_legal, error_message = "File requires Legal." },
@@ -274,6 +282,7 @@ module "notification" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   extra_set = [
     {
@@ -306,6 +315,7 @@ module "dataset" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_dataset || local.deploy_entitlements, error_message = "Dataset requires Entitlements." },
@@ -332,6 +342,7 @@ module "register" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_register || local.deploy_entitlements, error_message = "Register requires Entitlements." },
@@ -357,6 +368,7 @@ module "policy" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   preconditions = [
     { condition = !local.deploy_policy || local.deploy_entitlements, error_message = "Policy requires Entitlements." },
@@ -381,6 +393,7 @@ module "secret" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   # Note: data.secretAdminNamespace defaults to "secret-admin" in the chart.
   # The chart creates a namespace named "{release-namespace}-{secretAdminNamespace}",
@@ -410,6 +423,7 @@ module "workflow" {
   cimpl_project             = var.cimpl_project
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
+  nodepool_name             = local.osdu_nodepool_label
 
   extra_set = [
     {

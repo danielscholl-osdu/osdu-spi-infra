@@ -144,6 +144,15 @@ resource "kubectl_manifest" "kibana" {
             - effect: NoSchedule
               key: workload
               value: "${var.nodepool_name}"
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: agentpool
+                        operator: In
+                        values:
+                          - ${var.nodepool_name}
           containers:
             - name: kibana
               resources:
@@ -291,6 +300,26 @@ resource "helm_release" "elastic_bootstrap" {
     {
       name  = "elasticsearch.username"
       value = "elastic"
+    },
+    {
+      name  = "tolerations[0].key"
+      value = "workload"
+    },
+    {
+      name  = "tolerations[0].operator"
+      value = "Equal"
+    },
+    {
+      name  = "tolerations[0].value"
+      value = var.nodepool_name
+    },
+    {
+      name  = "tolerations[0].effect"
+      value = "NoSchedule"
+    },
+    {
+      name  = "nodeSelector.agentpool"
+      value = var.nodepool_name
     },
   ]
 

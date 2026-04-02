@@ -27,3 +27,9 @@ variable "minio_root_password" {
   type        = string
   sensitive   = true
 }
+
+variable "nodepool_name" {
+  description = "Name of the Karpenter NodePool for scheduling"
+  type        = string
+  default     = "platform"
+}

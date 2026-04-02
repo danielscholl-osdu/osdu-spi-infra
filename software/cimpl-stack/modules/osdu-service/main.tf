@@ -97,7 +97,10 @@ resource "helm_release" "service" {
 
   postrender = {
     binary_path = "pwsh"
-    args        = ["-File", "${var.kustomize_path}/kustomize/postrender.ps1", "-ServiceName", var.service_name, "-ReleaseNamespace", var.namespace]
+    args = concat(
+      ["-File", "${var.kustomize_path}/kustomize/postrender.ps1", "-ServiceName", var.service_name, "-ReleaseNamespace", var.namespace],
+      var.nodepool_name != "" ? ["-NodepoolName", var.nodepool_name] : []
+    )
   }
 
   set = local.all_set

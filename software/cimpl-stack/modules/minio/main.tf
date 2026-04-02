@@ -75,6 +75,20 @@ resource "helm_release" "minio" {
           - ALL
       seccompProfile:
         type: RuntimeDefault
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: "${var.nodepool_name}"
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: agentpool
+                  operator: In
+                  values:
+                    - ${var.nodepool_name}
     users: []
     buckets:
       - name: refi-opa-policies

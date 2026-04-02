@@ -86,6 +86,12 @@ variable "extra_set" {
   default = []
 }
 
+variable "nodepool_name" {
+  description = "Karpenter NodePool label for pod scheduling (agentpool label value)"
+  type        = string
+  default     = ""
+}
+
 variable "preconditions" {
   description = "List of precondition checks evaluated before creating the Helm release"
   type = list(object({

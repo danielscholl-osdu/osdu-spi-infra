@@ -22,6 +22,7 @@ components:
   - ../../components/seccomp
   - ../../components/security-context
   - ../../components/topology-spread
+  - ../../components/nodepool
 
 patches:
   - path: probes.yaml
