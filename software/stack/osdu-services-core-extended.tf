@@ -66,6 +66,9 @@ module "notification" {
     { name = "ENTITLEMENTS_SERVICE_API_KEY", value = "OBSOLETE" },
     { name = "REGISTER_SERVICE_ENDPOINT", value = "http://register/api/register/v1" },
     { name = "registeration_service_endpoint", value = "http://register/api/register/v1" },
+    { name = "executor_n_threads", value = "32" },
+    { name = "max_concurrent_calls", value = "32" },
+    { name = "max_lock_renew_duration_seconds", value = "600" },
   ]
 
   preconditions = [
