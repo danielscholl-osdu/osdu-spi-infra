@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightLlmsTxt from 'starlight-llms-txt';
 
 export default defineConfig({
 	site: 'https://danielscholl-osdu.github.io',
@@ -13,6 +14,7 @@ export default defineConfig({
 			editLink: {
 				baseUrl: 'https://github.com/danielscholl-osdu/osdu-spi-infra/edit/main/docs/',
 			},
+			plugins: [starlightLlmsTxt()],
 			sidebar: [
 				{
 					label: 'Getting Started',
