@@ -294,7 +294,7 @@ function Deploy-Stack {
     helm repo update 2>&1 | Out-Null
     Write-Host "  Helm repos ready" -ForegroundColor Green
 
-    Push-Location $PSScriptRoot/../software/stack
+    Push-Location $PSScriptRoot/../software/spi-stack
     if (-not (Test-Path ".tfstate")) { New-Item -ItemType Directory -Path ".tfstate" | Out-Null }
 
     Write-Host "  Initializing terraform (state: $stateFile.tfstate)..." -ForegroundColor Gray
@@ -473,6 +473,226 @@ function Show-Summary {
 
 #endregion
 
+#region CIMPL Functions
+
+function Get-CimplVars {
+    param([hashtable]$Ctx)
+
+    $spiIngressPrefix = Get-AzdValue -Name "SPI_INGRESS_PREFIX"
+    $cimplIngressPrefix = Get-AzdValue -Name "CIMPL_INGRESS_PREFIX"
+    if ([string]::IsNullOrEmpty($cimplIngressPrefix) -and -not [string]::IsNullOrEmpty($spiIngressPrefix)) {
+        $cimplIngressPrefix = "$spiIngressPrefix-cimpl"
+    }
+
+    $acmeEmail = Get-AzdValue -Name "TF_VAR_acme_email"
+    $useLetsencryptProd = Get-AzdValue -Name "TF_VAR_use_letsencrypt_production"
+    if ([string]::IsNullOrEmpty($useLetsencryptProd)) { $useLetsencryptProd = "false" }
+
+    $dnsZoneName = Get-AzdValue -Name "TF_VAR_dns_zone_name"
+    $dnsZoneRg = Get-AzdValue -Name "TF_VAR_dns_zone_resource_group"
+    $dnsZoneSubId = Get-AzdValue -Name "TF_VAR_dns_zone_subscription_id"
+    $externalDnsClientId = Get-AzdValue -Name "EXTERNAL_DNS_CLIENT_ID"
+    $tenantId = Get-AzdValue -Name "AZURE_TENANT_ID"
+
+    # CIMPL-specific credentials
+    $postgresqlPassword = Get-AzdValue -Name "CIMPL_POSTGRESQL_PASSWORD"
+    $postgresqlUsername = Get-AzdValue -Name "CIMPL_POSTGRESQL_USERNAME"
+    if ([string]::IsNullOrEmpty($postgresqlUsername)) { $postgresqlUsername = "cimpl" }
+    $keycloakDbPassword = Get-AzdValue -Name "CIMPL_KEYCLOAK_DB_PASSWORD"
+    $keycloakAdminPassword = Get-AzdValue -Name "CIMPL_KEYCLOAK_ADMIN_PASSWORD"
+    $datafierClientSecret = Get-AzdValue -Name "CIMPL_DATAFIER_CLIENT_SECRET"
+    $airflowDbPassword = Get-AzdValue -Name "CIMPL_AIRFLOW_DB_PASSWORD"
+    $redisPassword = Get-AzdValue -Name "CIMPL_REDIS_PASSWORD"
+    $rabbitmqUsername = Get-AzdValue -Name "CIMPL_RABBITMQ_USERNAME"
+    if ([string]::IsNullOrEmpty($rabbitmqUsername)) { $rabbitmqUsername = "osdu" }
+    $rabbitmqPassword = Get-AzdValue -Name "CIMPL_RABBITMQ_PASSWORD"
+    $rabbitmqErlangCookie = Get-AzdValue -Name "CIMPL_RABBITMQ_ERLANG_COOKIE"
+    $minioRootUser = Get-AzdValue -Name "CIMPL_MINIO_ROOT_USER"
+    if ([string]::IsNullOrEmpty($minioRootUser)) { $minioRootUser = "minioadmin" }
+    $minioRootPassword = Get-AzdValue -Name "CIMPL_MINIO_ROOT_PASSWORD"
+    $cimplTenant = Get-AzdValue -Name "CIMPL_TENANT"
+    if ([string]::IsNullOrEmpty($cimplTenant)) { $cimplTenant = "osdu" }
+    $cimplProject = Get-AzdValue -Name "CIMPL_PROJECT"
+    if ([string]::IsNullOrEmpty($cimplProject)) { $cimplProject = "opendes" }
+    $subscriberPrivateKeyId = Get-AzdValue -Name "CIMPL_SUBSCRIBER_PRIVATE_KEY_ID"
+
+    Write-Host "  CIMPL ingress prefix: $cimplIngressPrefix" -ForegroundColor Gray
+
+    return @{
+        AcmeEmail              = $acmeEmail
+        IngressPrefix          = $cimplIngressPrefix
+        UseLetsencryptProd     = $useLetsencryptProd
+        DnsZoneName            = $dnsZoneName
+        DnsZoneRg              = $dnsZoneRg
+        DnsZoneSubId           = $dnsZoneSubId
+        ExternalDnsClientId    = $externalDnsClientId
+        TenantId               = $tenantId
+        PostgresqlPassword     = $postgresqlPassword
+        PostgresqlUsername     = $postgresqlUsername
+        KeycloakDbPassword     = $keycloakDbPassword
+        KeycloakAdminPassword  = $keycloakAdminPassword
+        DatafierClientSecret   = $datafierClientSecret
+        AirflowDbPassword      = $airflowDbPassword
+        RedisPassword          = $redisPassword
+        RabbitmqUsername       = $rabbitmqUsername
+        RabbitmqPassword       = $rabbitmqPassword
+        RabbitmqErlangCookie   = $rabbitmqErlangCookie
+        MinioRootUser          = $minioRootUser
+        MinioRootPassword      = $minioRootPassword
+        CimplTenant            = $cimplTenant
+        CimplProject           = $cimplProject
+        SubscriberPrivateKeyId = $subscriberPrivateKeyId
+    }
+}
+
+function Deploy-CimplStack {
+    param([hashtable]$Ctx, [hashtable]$Vars)
+
+    Write-Host ""
+    Write-Host "=================================================================="
+    Write-Host "  Deploying CIMPL Stack"
+    Write-Host "=================================================================="
+
+    # Ensure Helm repo caches are populated
+    Write-Host "  Updating Helm repository caches..." -ForegroundColor Gray
+    $repos = @(
+        @{ Name = "apache-airflow"; Url = "https://airflow.apache.org" }
+    )
+    foreach ($repo in $repos) {
+        helm repo add $repo.Name $repo.Url 2>&1 | Out-Null
+    }
+    helm repo update 2>&1 | Out-Null
+    Write-Host "  Helm repos ready" -ForegroundColor Green
+
+    Push-Location $PSScriptRoot/../software/cimpl-stack
+    if (-not (Test-Path ".tfstate")) { New-Item -ItemType Directory -Path ".tfstate" | Out-Null }
+
+    Write-Host "  Initializing terraform (state: cimpl.tfstate)..." -ForegroundColor Gray
+    terraform init -reconfigure -backend-config="path=.tfstate/cimpl.tfstate"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  ERROR: Terraform init failed for CIMPL stack" -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+
+    $tfArgs = @(
+        "-auto-approve", "-parallelism=4",
+        "-var=cluster_name=$($Ctx.ClusterName)",
+        "-var=resource_group_name=$($Ctx.ResourceGroup)",
+        "-var=acme_email=$($Vars.AcmeEmail)",
+        "-var=ingress_prefix=$($Vars.IngressPrefix)",
+        "-var=use_letsencrypt_production=$($Vars.UseLetsencryptProd)",
+        "-var=dns_zone_name=$($Vars.DnsZoneName)",
+        "-var=dns_zone_resource_group=$($Vars.DnsZoneRg)",
+        "-var=dns_zone_subscription_id=$($Vars.DnsZoneSubId)",
+        "-var=external_dns_client_id=$($Vars.ExternalDnsClientId)",
+        "-var=tenant_id=$($Vars.TenantId)",
+        "-var=postgresql_password=$($Vars.PostgresqlPassword)",
+        "-var=postgresql_username=$($Vars.PostgresqlUsername)",
+        "-var=keycloak_db_password=$($Vars.KeycloakDbPassword)",
+        "-var=keycloak_admin_password=$($Vars.KeycloakAdminPassword)",
+        "-var=datafier_client_secret=$($Vars.DatafierClientSecret)",
+        "-var=airflow_db_password=$($Vars.AirflowDbPassword)",
+        "-var=redis_password=$($Vars.RedisPassword)",
+        "-var=rabbitmq_username=$($Vars.RabbitmqUsername)",
+        "-var=rabbitmq_password=$($Vars.RabbitmqPassword)",
+        "-var=rabbitmq_erlang_cookie=$($Vars.RabbitmqErlangCookie)",
+        "-var=minio_root_user=$($Vars.MinioRootUser)",
+        "-var=minio_root_password=$($Vars.MinioRootPassword)",
+        "-var=cimpl_tenant=$($Vars.CimplTenant)",
+        "-var=cimpl_project=$($Vars.CimplProject)",
+        "-var=cimpl_subscriber_private_key_id=$($Vars.SubscriberPrivateKeyId)"
+    )
+
+    $platformNs = "platform-cimpl"
+    $osduNs = "osdu-cimpl"
+
+    $maxAttempts = 3
+    $attempt = 0
+    $success = $false
+
+    while (-not $success -and $attempt -lt $maxAttempts) {
+        $attempt++
+        if ($attempt -gt 1) {
+            foreach ($ns in @($platformNs, $osduNs)) {
+                $failed = helm list -n $ns --failed --pending --short 2>$null
+                foreach ($rel in ($failed -split "`n" | Where-Object { $_ })) {
+                    Write-Host "  Cleaning up orphaned helm release: $rel (namespace: $ns)" -ForegroundColor Yellow
+                    helm uninstall $rel -n $ns 2>$null
+                }
+            }
+            Write-Host "  Retrying terraform apply (attempt $attempt/$maxAttempts)..." -ForegroundColor Yellow
+            Start-Sleep -Seconds 10
+        } else {
+            Write-Host "  Running terraform apply..." -ForegroundColor Gray
+        }
+
+        terraform apply @tfArgs
+
+        if ($LASTEXITCODE -eq 0) {
+            $success = $true
+        } elseif ($attempt -lt $maxAttempts) {
+            Write-Host "  Terraform apply failed (attempt $attempt/$maxAttempts), will retry..." -ForegroundColor Yellow
+        }
+    }
+
+    if (-not $success) {
+        Write-Host "  ERROR: CIMPL stack deployment failed after $maxAttempts attempts" -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+
+    Write-Host "  CIMPL Stack deployed" -ForegroundColor Green
+    Pop-Location
+}
+
+function Test-CimplDeployment {
+    param([hashtable]$Vars)
+
+    Write-Host ""
+    Write-Host "=================================================================="
+    Write-Host "  Verifying CIMPL Deployment"
+    Write-Host "=================================================================="
+
+    Write-Host "  Waiting 30 seconds for components to stabilize..." -ForegroundColor Gray
+    Start-Sleep -Seconds 30
+
+    $es = kubectl get elasticsearch -n platform-cimpl -o jsonpath='{.items[0].status.health}' 2>$null
+    if ($es) { Write-Host "  Elasticsearch: $es" -ForegroundColor $(if ($es -eq "green") { "Green" } else { "Yellow" }) }
+    else { Write-Host "  Elasticsearch: Pending" -ForegroundColor Yellow }
+
+    $kibana = kubectl get kibana -n platform-cimpl -o jsonpath='{.items[0].status.health}' 2>$null
+    if ($kibana) { Write-Host "  Kibana: $kibana" -ForegroundColor $(if ($kibana -eq "green") { "Green" } else { "Yellow" }) }
+    else { Write-Host "  Kibana: Pending" -ForegroundColor Yellow }
+}
+
+function Show-CimplSummary {
+    param([hashtable]$Ctx, [hashtable]$Vars)
+
+    Write-Host ""
+    Write-Host "==================================================================" -ForegroundColor Green
+    Write-Host "  CIMPL Stack Deployed"                                             -ForegroundColor Green
+    Write-Host "==================================================================" -ForegroundColor Green
+    Write-Host "  Cluster: $($Ctx.ClusterName)"
+    Write-Host "  Namespaces: platform-cimpl, osdu-cimpl"
+
+    $hasIngress = (-not [string]::IsNullOrEmpty($Vars.IngressPrefix)) -and (-not [string]::IsNullOrEmpty($Vars.DnsZoneName))
+    if ($hasIngress) {
+        $osduApiHost  = "$($Vars.IngressPrefix).$($Vars.DnsZoneName)"
+        $kibanaHost   = "$($Vars.IngressPrefix)-kibana.$($Vars.DnsZoneName)"
+        $keycloakHost = "$($Vars.IngressPrefix)-keycloak.$($Vars.DnsZoneName)"
+        $airflowHost  = "$($Vars.IngressPrefix)-airflow.$($Vars.DnsZoneName)"
+
+        Write-Host "  OSDU API:  https://$osduApiHost/api/" -ForegroundColor Gray
+        Write-Host "  Kibana:    https://$kibanaHost" -ForegroundColor Gray
+        Write-Host "  Keycloak:  https://$keycloakHost" -ForegroundColor Gray
+        Write-Host "  Airflow:   https://$airflowHost" -ForegroundColor Gray
+    }
+    Write-Host ""
+}
+
+#endregion
+
 Write-Host ""
 Write-Host "==================================================================" -ForegroundColor Cyan
 Write-Host "  Pre-Deploy: Stack Deployment"                                     -ForegroundColor Cyan
@@ -491,5 +711,19 @@ $vars = Get-PlatformVars -Ctx $ctx
 Deploy-Stack -Ctx $ctx -Vars $vars -StackName $stackName
 $ip = Test-Deployment -Vars $vars -StackName $stackName
 Show-Summary -Ctx $ctx -Vars $vars -ExternalIp $ip -StackName $stackName
+
+# --- CIMPL Stack (optional) ---
+$enableCimpl = Get-AzdValue -Name "ENABLE_CIMPL_STACK"
+if ($enableCimpl -eq "true") {
+    Write-Host ""
+    Write-Host "==================================================================" -ForegroundColor Cyan
+    Write-Host "  Pre-Deploy: CIMPL Stack Deployment"                               -ForegroundColor Cyan
+    Write-Host "==================================================================" -ForegroundColor Cyan
+
+    $cimplVars = Get-CimplVars -Ctx $ctx
+    Deploy-CimplStack -Ctx $ctx -Vars $cimplVars
+    Test-CimplDeployment -Vars $cimplVars
+    Show-CimplSummary -Ctx $ctx -Vars $cimplVars
+}
 
 exit 0

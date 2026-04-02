@@ -1,0 +1,41 @@
+-- Copyright 2026, Microsoft
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--      http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- ===== register (OSM) =====
+\c register
+CREATE SCHEMA IF NOT EXISTS "${data_partition_id}" AUTHORIZATION osdu;
+
+CREATE TABLE IF NOT EXISTS "${data_partition_id}"."SUBSCRIPTION" (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    data jsonb NOT NULL, CONSTRAINT "SUBSCRIPTION_id" UNIQUE (id)
+);
+ALTER TABLE IF EXISTS "${data_partition_id}"."SUBSCRIPTION" OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS "SUBSCRIPTION_datagin" ON "${data_partition_id}"."SUBSCRIPTION" USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS "${data_partition_id}"."DDMS" (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    data jsonb NOT NULL, CONSTRAINT "DDMS_id" UNIQUE (id)
+);
+ALTER TABLE IF EXISTS "${data_partition_id}"."DDMS" OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS "DDMS_datagin" ON "${data_partition_id}"."DDMS" USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS "${data_partition_id}"."ACTION" (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    data jsonb NOT NULL, CONSTRAINT "ACTION_id" UNIQUE (id)
+);
+ALTER TABLE IF EXISTS "${data_partition_id}"."ACTION" OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS "ACTION_datagin" ON "${data_partition_id}"."ACTION" USING GIN (data);
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "${data_partition_id}" TO osdu;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA "${data_partition_id}" TO osdu;
