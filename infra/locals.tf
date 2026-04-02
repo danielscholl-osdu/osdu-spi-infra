@@ -206,10 +206,10 @@ locals {
       for tname, tspec in local.servicebus_topics : {
         for sname, sspec in tspec.subscriptions :
         "${p}/${tname}/${sname}" => {
-          partition    = p
-          topic        = tname
-          subscription = sname
-          max_delivery = sspec.max_delivery
+          partition     = p
+          topic         = tname
+          subscription  = sname
+          max_delivery  = sspec.max_delivery
           lock_duration = sspec.lock_duration
         }
       }

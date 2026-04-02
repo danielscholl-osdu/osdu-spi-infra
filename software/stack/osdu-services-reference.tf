@@ -81,9 +81,9 @@ module "crs_conversion" {
 
   init_containers = [
     {
-      name    = "download-sis-data"
-      image   = "curlimages/curl:8.12.1"
-      command = ["sh", "-c", "cd /data && curl -sSL https://community.opengroup.org/osdu/platform/system/reference/crs-conversion-service/-/archive/master/crs-conversion-service-master.tar.gz | tar xzf - --strip-components=1 crs-conversion-service-master/apachesis_setup"]
+      name            = "download-sis-data"
+      image           = "curlimages/curl:8.12.1"
+      command         = ["sh", "-c", "cd /data && curl -sSL https://community.opengroup.org/osdu/platform/system/reference/crs-conversion-service/-/archive/master/crs-conversion-service-master.tar.gz | tar xzf - --strip-components=1 crs-conversion-service-master/apachesis_setup"]
       volumeMounts    = [{ name = "sis-data", mountPath = "/data" }]
       resources       = local.init_resources
       securityContext = local.init_security_context
@@ -125,9 +125,9 @@ module "crs_catalog" {
 
   init_containers = [
     {
-      name    = "download-catalog"
-      image   = "curlimages/curl:8.12.1"
-      command = ["sh", "-c", "curl -sSL -o /data/crs_catalog_v2.json https://community.opengroup.org/osdu/platform/system/reference/crs-catalog-service/-/raw/master/data/crs_catalog_v2.json"]
+      name            = "download-catalog"
+      image           = "curlimages/curl:8.12.1"
+      command         = ["sh", "-c", "curl -sSL -o /data/crs_catalog_v2.json https://community.opengroup.org/osdu/platform/system/reference/crs-catalog-service/-/raw/master/data/crs_catalog_v2.json"]
       volumeMounts    = [{ name = "crs-data", mountPath = "/data" }]
       resources       = local.init_resources
       securityContext = local.init_security_context
@@ -189,9 +189,9 @@ module "unit" {
 
   init_containers = [
     {
-      name    = "download-catalog"
-      image   = "curlimages/curl:8.12.1"
-      command = ["sh", "-c", "curl -sSL -o /data/unit_catalog_v2.json https://community.opengroup.org/osdu/platform/system/reference/unit-service/-/raw/master/data/unit_catalog_v2.json"]
+      name            = "download-catalog"
+      image           = "curlimages/curl:8.12.1"
+      command         = ["sh", "-c", "curl -sSL -o /data/unit_catalog_v2.json https://community.opengroup.org/osdu/platform/system/reference/unit-service/-/raw/master/data/unit_catalog_v2.json"]
       volumeMounts    = [{ name = "unit-data", mountPath = "/data" }]
       resources       = local.init_resources
       securityContext = local.init_security_context

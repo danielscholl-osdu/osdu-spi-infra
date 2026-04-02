@@ -36,9 +36,9 @@ resource "azurerm_servicebus_namespace" "partition" {
 # ──────────────────────────────────────────────
 
 resource "azurerm_servicebus_topic" "partition" {
-  for_each            = local.partition_sb_topics
-  name                = each.value.topic
-  namespace_id        = azurerm_servicebus_namespace.partition[each.value.partition].id
+  for_each              = local.partition_sb_topics
+  name                  = each.value.topic
+  namespace_id          = azurerm_servicebus_namespace.partition[each.value.partition].id
   max_size_in_megabytes = each.value.max_size
 }
 
