@@ -65,6 +65,7 @@ module "notification" {
     { name = "ENTITLEMENTS_SERVICE_ENDPOINT", value = "http://entitlements/api/entitlements/v2" },
     { name = "ENTITLEMENTS_SERVICE_API_KEY", value = "OBSOLETE" },
     { name = "REGISTER_SERVICE_ENDPOINT", value = "http://register/api/register/v1" },
+    { name = "registeration_service_endpoint", value = "http://register/api/register/v1" },
   ]
 
   preconditions = [
