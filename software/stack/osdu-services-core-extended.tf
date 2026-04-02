@@ -172,6 +172,7 @@ module "register" {
     { name = "COSMOSDB_DATABASE", value = "osdu-db" },
     { name = "SERVICEBUS_TOPIC_NAME", value = "recordstopic" },
     { name = "azure_serviceBus_enabled", value = "true" },
+    { name = "azure_eventGrid_enabled", value = "false" },
     { name = "PARTITION_SERVICE_ENDPOINT", value = "http://partition/api/partition/v1" },
     { name = "ENTITLEMENTS_SERVICE_ENDPOINT", value = "http://entitlements/api/entitlements/v2" },
     { name = "ENTITLEMENTS_SERVICE_API_KEY", value = "OBSOLETE" },

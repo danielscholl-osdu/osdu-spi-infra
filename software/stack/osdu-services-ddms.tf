@@ -146,6 +146,7 @@ module "eds_dms" {
     { name = "STORAGE_SERVICE_ENDPOINT", value = "http://storage/api/storage/v2" },
     { name = "SCHEMA_SERVICE_ENDPOINT", value = "http://schema/api/schema-service/v1" },
     { name = "DATASET_SERVICE_ENDPOINT", value = "http://dataset/api/dataset/v1" },
+    { name = "KEY_VAULT_URL", value = var.keyvault_uri },
   ]
 
   preconditions = [
