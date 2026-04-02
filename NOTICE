@@ -1,0 +1,11 @@
+OSDU SPI Infrastructure
+Copyright 2026, Daniel Scholl
+
+This product is licensed under the Apache License, Version 2.0.
+
+This product includes software developed for use with the OSDU (Open
+Subsurface Data Universe) platform ecosystem, deploying the Azure Service
+Provider Interface (SPI) implementation on AKS Automatic.
+
+Third-party npm dependency licenses used by the documentation site are
+listed in THIRD-PARTY-NOTICES.txt.

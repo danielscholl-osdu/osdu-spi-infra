@@ -1,0 +1,13 @@
+{
+  "name": "osdu-spi-infra",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Infrastructure as Code for deploying the OSDU Azure SPI on AKS Automatic",
+  "license": "Apache-2.0",
+  "scripts": {
+    "notice": "generate-license-file --input docs/package.json --output THIRD-PARTY-NOTICES.txt --overwrite"
+  },
+  "devDependencies": {
+    "generate-license-file": "^4.1.1"
+  }
+}
