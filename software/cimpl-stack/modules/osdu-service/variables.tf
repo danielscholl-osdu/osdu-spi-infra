@@ -92,6 +92,12 @@ variable "nodepool_name" {
   default     = ""
 }
 
+variable "platform_namespace" {
+  description = "Platform namespace for cross-namespace service references (Keycloak JWKS URI rewrite)"
+  type        = string
+  default     = ""
+}
+
 variable "preconditions" {
   description = "List of precondition checks evaluated before creating the Helm release"
   type = list(object({

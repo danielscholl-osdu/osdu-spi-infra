@@ -99,7 +99,8 @@ resource "helm_release" "service" {
     binary_path = "pwsh"
     args = concat(
       ["-File", "${var.kustomize_path}/kustomize/postrender.ps1", "-ServiceName", var.service_name, "-ReleaseNamespace", var.namespace],
-      var.nodepool_name != "" ? ["-NodepoolName", var.nodepool_name] : []
+      var.nodepool_name != "" ? ["-NodepoolName", var.nodepool_name] : [],
+      var.platform_namespace != "" ? ["-PlatformNamespace", var.platform_namespace] : []
     )
   }
 

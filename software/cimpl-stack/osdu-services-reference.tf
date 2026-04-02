@@ -31,6 +31,7 @@ module "crs_conversion" {
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
   nodepool_name             = local.osdu_nodepool_label
+  platform_namespace        = local.platform_namespace
 
   preconditions = [
     { condition = !local.deploy_crs_conversion || local.deploy_entitlements, error_message = "CRS Conversion requires Entitlements." },
@@ -56,6 +57,7 @@ module "crs_catalog" {
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
   nodepool_name             = local.osdu_nodepool_label
+  platform_namespace        = local.platform_namespace
 
   preconditions = [
     { condition = !local.deploy_crs_catalog || local.deploy_entitlements, error_message = "CRS Catalog requires Entitlements." },
@@ -81,6 +83,7 @@ module "unit" {
   subscriber_private_key_id = var.cimpl_subscriber_private_key_id
   kustomize_path            = path.module
   nodepool_name             = local.osdu_nodepool_label
+  platform_namespace        = local.platform_namespace
 
   preconditions = [
     { condition = !local.deploy_unit || local.deploy_entitlements, error_message = "Unit requires Entitlements." },

@@ -8,7 +8,9 @@ param(
 
     [string]$ReleaseNamespace,
 
-    [string]$NodepoolName
+    [string]$NodepoolName,
+
+    [string]$PlatformNamespace
 )
 
 $ErrorActionPreference = 'Stop'
@@ -73,6 +75,13 @@ try {
     # Run kustomize and filter out Namespace resources
     $kustomizeOutput = kubectl kustomize $TempServiceDir
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    # Fix JWKS URIs: Helm charts assume Keycloak is in the OSDU namespace,
+    # but it runs in the platform namespace. Rewrite jwksUri to use the
+    # correct platform namespace FQDN so Istio can fetch JWKS keys.
+    if ($PlatformNamespace -and $ReleaseNamespace) {
+        $kustomizeOutput = $kustomizeOutput -replace "keycloak\.$([regex]::Escape($ReleaseNamespace))\.svc\.cluster\.local", "keycloak.$PlatformNamespace.svc.cluster.local:8080"
+    }
 
     # Split on YAML document separators and filter out Namespace resources
     $documents = ($kustomizeOutput -join "`n") -split '(?m)^---$'
