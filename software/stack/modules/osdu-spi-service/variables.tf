@@ -97,8 +97,8 @@ variable "resources" {
     })
   })
   default = {
-    requests = { cpu = "200m", memory = "512Mi" }
-    limits   = { cpu = "1", memory = "1Gi" }
+    requests = { cpu = "50m", memory = "640Mi" }
+    limits   = { cpu = "1", memory = "1536Mi" }
   }
 }
 
@@ -179,4 +179,21 @@ variable "atomic" {
   description = "Purge the release on failure"
   type        = bool
   default     = false
+}
+
+variable "node_scheduling" {
+  description = "Node scheduling constraints (nodeSelector + tolerations) for nodepool isolation"
+  type = object({
+    nodeSelector = map(string)
+    tolerations = list(object({
+      key      = string
+      operator = string
+      value    = string
+      effect   = string
+    }))
+  })
+  default = {
+    nodeSelector = {}
+    tolerations  = []
+  }
 }

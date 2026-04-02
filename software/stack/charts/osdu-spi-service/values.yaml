@@ -86,6 +86,10 @@ redisTls: false
 # -- Topology spread constraints
 topologySpread: true
 
+# -- Node scheduling (set by Terraform when nodepool isolation is enabled)
+nodeSelector: {}
+tolerations: []
+
 # -- Pin Istio sidecar proxy image
 istioProxyPin:
   enabled: false

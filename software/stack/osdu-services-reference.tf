@@ -42,6 +42,7 @@ module "crs_conversion" {
   enable           = local.deploy_crs_conversion
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
 
   # CRS Conversion runs Tomcat on a single port (no separate management port)
   probes = {
@@ -109,6 +110,7 @@ module "crs_catalog" {
   enable           = local.deploy_crs_catalog
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "crs-catalog" },
@@ -153,6 +155,7 @@ module "unit" {
   enable           = local.deploy_unit
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
 
   # Unit service runs Tomcat on a single port (no separate management port)
   probes = {

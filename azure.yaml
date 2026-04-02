@@ -11,21 +11,15 @@ infra:
 
 # Hooks for multi-layer deployment
 hooks:
-  # Pre-restore: Resolve OSDU chart versions and container image tags
-  prerestore:
+  # Pre-provision: Resolve external dependencies, then validate prerequisites
+  preprovision:
     interactive: true
     continueOnError: false
     shell: pwsh
     run: |
       ./scripts/resolve-chart-versions.ps1
       ./scripts/resolve-image-tags.ps1
-
-  # Pre-provision: Validate prerequisites
-  preprovision:
-    interactive: true
-    continueOnError: false
-    shell: pwsh
-    run: ./scripts/pre-provision.ps1
+      ./scripts/pre-provision.ps1
 
   # Post-provision: Configure safeguards and deploy foundation layer
   postprovision:

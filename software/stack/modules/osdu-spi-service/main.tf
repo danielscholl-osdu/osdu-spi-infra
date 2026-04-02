@@ -40,6 +40,8 @@ resource "helm_release" "service" {
     configMapRef       = "osdu-config"
     workloadIdentity   = true
     topologySpread     = true
+    nodeSelector       = var.node_scheduling.nodeSelector
+    tolerations        = var.node_scheduling.tolerations
     elasticTls         = var.elastic_tls
     redisTls           = var.redis_tls
     istioProxyPin = {
