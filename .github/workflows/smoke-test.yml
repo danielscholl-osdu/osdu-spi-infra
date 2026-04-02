@@ -1,0 +1,209 @@
+name: Smoke Test
+
+on:
+  schedule:
+    # Weekly Sunday at 2 AM UTC — deploy, validate, teardown
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      skip_teardown:
+        description: 'Keep the environment running after smoke test'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+
+concurrency:
+  group: "smoke-test"
+  cancel-in-progress: false
+
+env:
+  AZURE_ENV_NAME: spi-smoke
+  AZURE_LOCATION: eastus2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: smoke-test
+    outputs:
+      deploy_status: ${{ steps.deploy.outcome }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install azd
+        uses: Azure/setup-azd@v2
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.12"
+
+      - name: Install tools
+        run: |
+          # Install kubelogin
+          az aks install-cli 2>/dev/null || true
+
+          # Install Helm
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+          # Install PowerShell
+          sudo apt-get update && sudo apt-get install -y powershell
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: azd Auth
+        run: azd auth login --client-id "${{ secrets.AZURE_CLIENT_ID }}" --federated-credential-provider github --tenant-id "${{ secrets.AZURE_TENANT_ID }}"
+
+      - name: Deploy
+        id: deploy
+        run: |
+          azd env new "$AZURE_ENV_NAME"
+          azd env set AZURE_LOCATION "$AZURE_LOCATION"
+          azd env set AZURE_CONTACT_EMAIL "${{ secrets.AZURE_CONTACT_EMAIL || 'smoke-test@example.com' }}"
+          azd env set ENABLE_GRAFANA_WORKSPACE false
+          azd up --no-prompt
+        timeout-minutes: 45
+
+      - name: Validate services
+        if: success()
+        run: |
+          echo "Checking cluster connectivity..."
+          kubectl get nodes
+          echo "---"
+          echo "Checking OSDU pods..."
+          kubectl get pods -n osdu --no-headers | tee /tmp/pods.txt
+          FAILED=$(grep -cE 'CrashLoopBackOff|Error|ImagePullBackOff' /tmp/pods.txt || true)
+          TOTAL=$(wc -l < /tmp/pods.txt)
+          echo "Total pods: $TOTAL, Failed: $FAILED"
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::warning::$FAILED pod(s) in error state"
+            kubectl get pods -n osdu | grep -E 'CrashLoopBackOff|Error|ImagePullBackOff'
+          fi
+          echo "---"
+          echo "Checking middleware..."
+          kubectl get pods -n platform --no-headers
+
+  teardown:
+    needs: deploy
+    if: ${{ always() && inputs.skip_teardown != true }}
+    runs-on: ubuntu-latest
+    environment: smoke-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install azd
+        uses: Azure/setup-azd@v2
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.12"
+
+      - name: Install tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y powershell
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: azd Auth
+        run: azd auth login --client-id "${{ secrets.AZURE_CLIENT_ID }}" --federated-credential-provider github --tenant-id "${{ secrets.AZURE_TENANT_ID }}"
+
+      - name: Teardown
+        run: |
+          azd env select "$AZURE_ENV_NAME" || azd env new "$AZURE_ENV_NAME"
+          azd env set AZURE_LOCATION "$AZURE_LOCATION"
+          azd down --force --purge --no-prompt
+        timeout-minutes: 30
+
+  notify-failure:
+    needs: [deploy, teardown]
+    if: ${{ always() && (needs.deploy.result == 'failure' || needs.teardown.result == 'failure') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployResult = '${{ needs.deploy.result }}';
+            const teardownResult = '${{ needs.teardown.result }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            let failedStage = '';
+            if (deployResult === 'failure') failedStage = 'Deployment (`azd up`)';
+            else if (teardownResult === 'failure') failedStage = 'Teardown (`azd down`)';
+
+            const title = `Smoke test failure: ${failedStage}`;
+            const body = [
+              `## Smoke Test Failure`,
+              ``,
+              `**Failed stage:** ${failedStage}`,
+              `**Workflow run:** ${runUrl}`,
+              `**Date:** ${new Date().toISOString().split('T')[0]}`,
+              `**Environment:** \`${process.env.AZURE_ENV_NAME}\``,
+              `**Location:** \`${process.env.AZURE_LOCATION}\``,
+              ``,
+              `### What happened`,
+              ``,
+              `The weekly smoke test failed during the ${failedStage.toLowerCase()} phase.`,
+              `This may indicate:`,
+              ``,
+              `- A breaking change in a Terraform provider or AVM module`,
+              `- An Azure API change or regional capacity issue`,
+              `- A Helm chart or container image regression`,
+              ``,
+              `### Next steps`,
+              ``,
+              `1. Review the [workflow run](${runUrl}) for error details`,
+              `2. Check recent Dependabot PRs for provider updates that may have caused this`,
+              `3. Run \`azd up\` locally to reproduce`,
+              `4. If the environment was not torn down, clean up manually: \`azd down --force --purge\``,
+              ``,
+              `### Checklist`,
+              ``,
+              `- [ ] Root cause identified`,
+              `- [ ] Fix applied or issue documented`,
+              `- [ ] Environment cleaned up`,
+            ].join('\n');
+
+            // Check for existing open issue to avoid duplicates
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'smoke-test-failed',
+              per_page: 1,
+            });
+
+            if (issues.length > 0) {
+              // Comment on existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body: `### Recurring failure\n\n${failedStage} failed again.\n**Run:** ${runUrl}`,
+              });
+              core.info(`Commented on existing issue #${issues[0].number}`);
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['smoke-test-failed', 'human-required'],
+              });
+              core.info('Created new smoke test failure issue');
+            }

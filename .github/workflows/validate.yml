@@ -1,0 +1,120 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - 'infra-access/**'
+      - 'software/**'
+      - '.github/workflows/validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
+      infra-access: ${{ steps.filter.outputs.infra-access }}
+      foundation: ${{ steps.filter.outputs.foundation }}
+      stack: ${{ steps.filter.outputs.stack }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            infra:
+              - 'infra/**'
+            infra-access:
+              - 'infra-access/**'
+            foundation:
+              - 'software/foundation/**'
+            stack:
+              - 'software/stack/**'
+
+  terraform-fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.12"
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive -diff
+
+  terraform-validate:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: infra
+            path: infra
+            changed: ${{ needs.detect-changes.outputs.infra }}
+          - name: infra-access
+            path: infra-access
+            changed: ${{ needs.detect-changes.outputs.infra-access }}
+          - name: foundation
+            path: software/foundation
+            changed: ${{ needs.detect-changes.outputs.foundation }}
+          - name: stack
+            path: software/stack
+            changed: ${{ needs.detect-changes.outputs.stack }}
+    steps:
+      - uses: actions/checkout@v4
+        if: ${{ matrix.changed == 'true' }}
+
+      - uses: hashicorp/setup-terraform@v3
+        if: ${{ matrix.changed == 'true' }}
+        with:
+          terraform_version: "~> 1.12"
+
+      - name: Terraform Init (${{ matrix.name }})
+        if: ${{ matrix.changed == 'true' }}
+        working-directory: ${{ matrix.path }}
+        run: terraform init -backend=false
+
+      - name: Terraform Validate (${{ matrix.name }})
+        if: ${{ matrix.changed == 'true' }}
+        working-directory: ${{ matrix.path }}
+        run: terraform validate
+
+  docs-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm ci
+
+      - name: Build docs
+        working-directory: docs
+        run: npm run build
+
+  summary:
+    if: always()
+    needs: [terraform-fmt, terraform-validate, docs-build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.terraform-fmt.result }}" == "failure" ]] || \
+             [[ "${{ needs.terraform-validate.result }}" == "failure" ]] || \
+             [[ "${{ needs.docs-build.result }}" == "failure" ]]; then
+            echo "::error::One or more validation checks failed"
+            exit 1
+          fi
+          echo "All validation checks passed"

@@ -55,3 +55,4 @@ software/stack/osdu-images.auto.tfvars
 
 # Stack state files (per-instance, not committed)
 software/stack/.tfstate/
+node_modules/
