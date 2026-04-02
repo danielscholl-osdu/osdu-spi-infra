@@ -39,7 +39,7 @@ variable "enable_eds_dms" {
 }
 
 variable "enable_oetp_server" {
-  description = "Enable OSDU Open ETP Server service deployment"
+  description = "Enable OSDU Open ETP Server service deployment (disabled: requires PostgreSQL and custom CLI args, not a standard HTTP service)"
   type        = bool
-  default     = true
+  default     = false
 }
