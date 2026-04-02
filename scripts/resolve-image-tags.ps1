@@ -6,6 +6,8 @@
 .DESCRIPTION
   Queries the OSDU community GitLab container registry API for each service and
   writes resolved image tags to software/spi-stack/osdu-images.auto.tfvars for Terraform consumption.
+  This script is SPI-specific — the CIMPL stack uses OCI Helm charts with images
+  baked in and does not need separate image tag resolution.
 
   The GitLab cleanup policy prunes old image tags, so hardcoded SHAs go stale.
   This script ensures we always deploy with a tag that exists in the registry.

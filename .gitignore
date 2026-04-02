@@ -51,9 +51,9 @@ software/foundation/charts/*/kustomize/all.yaml
 software/spi-stack/kustomize/services/*/all.yaml
 software/cimpl-stack/kustomize/services/*/all.yaml
 
-# Per-stack OSDU version overrides (instance-specific, not committed)
-software/spi-stack/osdu-versions.auto.tfvars
+# Per-stack OSDU auto-generated tfvars (instance-specific, not committed)
 software/spi-stack/osdu-images.auto.tfvars
+software/cimpl-stack/osdu-versions.auto.tfvars
 
 # Stack state files (per-instance, not committed)
 software/spi-stack/.tfstate/
