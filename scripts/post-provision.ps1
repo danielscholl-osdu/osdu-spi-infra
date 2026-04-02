@@ -1182,6 +1182,25 @@ if (-not $clusterAccessReady) {
 }
 
 Set-Safeguards -Ctx $ctx
+
+# Enable Istio CNI chaining so sidecar injection works with Deployment Safeguards.
+# CNI chaining replaces the privileged istio-init container with node-level redirection,
+# eliminating NET_ADMIN/NET_RAW capabilities that baseline safeguards block.
+Write-Host "  Checking Istio CNI chaining..." -ForegroundColor Gray
+$meshProfile = az aks show -g $ctx.ResourceGroup -n $ctx.ClusterName @($ctx.SubArgs) `
+    --query "serviceMeshProfile.istio.components.proxyRedirectionMechanism" -o tsv 2>$null
+if ($meshProfile -ne "CNIChaining") {
+    Write-Host "  Enabling Istio CNI chaining..." -ForegroundColor Cyan
+    az aks mesh enable-istio-cni -g $ctx.ResourceGroup -n $ctx.ClusterName @($ctx.SubArgs) --only-show-errors 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "  WARNING: Failed to enable Istio CNI chaining. Sidecar injection may be blocked by safeguards." -ForegroundColor Yellow
+    } else {
+        Write-Host "  Istio CNI chaining: enabled" -ForegroundColor Green
+    }
+} else {
+    Write-Host "  Istio CNI chaining: already enabled" -ForegroundColor Green
+}
+
 $optionalResult = Ensure-OptionalCapabilities -Ctx $ctx -Principal $principal
 if (-not $optionalResult.FoundationReady) {
     Set-PostProvisionState -Ready $false -Reason $optionalResult.Reason -FoundationDeployed $false -FoundationReason $optionalResult.Reason

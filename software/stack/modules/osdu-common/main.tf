@@ -20,6 +20,9 @@
 resource "kubernetes_namespace_v1" "osdu" {
   metadata {
     name = var.namespace
+    labels = {
+      "istio.io/rev" = var.istio_revision
+    }
   }
 }
 

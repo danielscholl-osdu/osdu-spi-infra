@@ -21,8 +21,8 @@ module "aks" {
   location  = var.location
   parent_id = azurerm_resource_group.main.id
 
-  # Kubernetes Version (1.33 - default, KubernetesOfficial support)
-  kubernetes_version = "1.33"
+  # Kubernetes Version (1.34 - default, KubernetesOfficial support)
+  kubernetes_version = "1.34"
 
   # AKS Automatic SKU
   sku = {
