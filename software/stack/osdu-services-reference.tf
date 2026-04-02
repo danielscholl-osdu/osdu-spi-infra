@@ -43,6 +43,26 @@ module "crs_conversion" {
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
 
+  # CRS Conversion runs Tomcat on a single port (no separate management port)
+  probes = {
+    liveness = {
+      path                = "/api/crs/converter/actuator/health"
+      port                = 8080
+      initialDelaySeconds = 250
+      periodSeconds       = 10
+      timeoutSeconds      = 5
+      failureThreshold    = 3
+    }
+    readiness = {
+      path                = "/api/crs/converter/actuator/health"
+      port                = 8080
+      initialDelaySeconds = 10
+      periodSeconds       = 10
+      timeoutSeconds      = 5
+      failureThreshold    = 3
+    }
+  }
+
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "crs-conversion-service" },
     { name = "SERVER_SERVLET_CONTEXTPATH", value = "/api/crs/converter/" },
@@ -133,6 +153,26 @@ module "unit" {
   enable           = local.deploy_unit
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+
+  # Unit service runs Tomcat on a single port (no separate management port)
+  probes = {
+    liveness = {
+      path                = "/api/unit/actuator/health"
+      port                = 8080
+      initialDelaySeconds = 250
+      periodSeconds       = 10
+      timeoutSeconds      = 5
+      failureThreshold    = 3
+    }
+    readiness = {
+      path                = "/api/unit/actuator/health"
+      port                = 8080
+      initialDelaySeconds = 10
+      periodSeconds       = 10
+      timeoutSeconds      = 5
+      failureThreshold    = 3
+    }
+  }
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "unit" },
