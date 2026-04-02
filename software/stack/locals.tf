@@ -20,13 +20,29 @@
 # A single source directory serves all stack instances via STACK_NAME:
 # - (unset)  -> namespaces: platform, osdu
 # - "blue"   -> namespaces: platform-blue, osdu-blue
-# All stacks share one Karpenter NodePool named "platform".
+# Two Karpenter NodePools: "platform" (middleware) and "osdu" (microservices).
 
 locals {
   platform_namespace = var.stack_id != "" ? "platform-${var.stack_id}" : "platform"
   osdu_namespace     = var.stack_id != "" ? "osdu-${var.stack_id}" : "osdu"
   nodepool_name      = "platform"
+  osdu_nodepool_name = "osdu"
   stack_label        = var.stack_id != "" ? var.stack_id : "default"
+
+  # Node scheduling for OSDU services -- when nodepool isolation is enabled,
+  # pods get a nodeSelector and toleration targeting the dedicated "osdu" pool.
+  osdu_node_scheduling = var.enable_nodepool ? {
+    nodeSelector = { "agentpool" = "osdu" }
+    tolerations = [{
+      key      = "workload"
+      operator = "Equal"
+      value    = "osdu"
+      effect   = "NoSchedule"
+    }]
+    } : {
+    nodeSelector = {}
+    tolerations  = []
+  }
 
   common_labels = {
     "app.kubernetes.io/managed-by" = "terraform"

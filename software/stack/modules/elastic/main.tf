@@ -144,6 +144,15 @@ resource "kubectl_manifest" "kibana" {
             - effect: NoSchedule
               key: workload
               value: "platform"
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                  - matchExpressions:
+                      - key: agentpool
+                        operator: In
+                        values:
+                          - platform
           containers:
             - name: kibana
               resources:

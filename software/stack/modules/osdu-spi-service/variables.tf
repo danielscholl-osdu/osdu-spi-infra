@@ -180,3 +180,20 @@ variable "atomic" {
   type        = bool
   default     = false
 }
+
+variable "node_scheduling" {
+  description = "Node scheduling constraints (nodeSelector + tolerations) for nodepool isolation"
+  type = object({
+    nodeSelector = map(string)
+    tolerations = list(object({
+      key      = string
+      operator = string
+      value    = string
+      effect   = string
+    }))
+  })
+  default = {
+    nodeSelector = {}
+    tolerations  = []
+  }
+}

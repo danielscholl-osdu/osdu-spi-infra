@@ -29,6 +29,7 @@ module "partition" {
   enable           = local.deploy_partition
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   env = [
@@ -54,6 +55,7 @@ module "entitlements" {
   enable           = local.deploy_entitlements
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   env = [
@@ -87,6 +89,7 @@ module "legal" {
   enable           = local.deploy_legal
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   env = [
@@ -125,6 +128,7 @@ module "schema" {
   enable           = local.deploy_schema
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   env = [
@@ -163,6 +167,7 @@ module "storage" {
   enable           = local.deploy_storage
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
   istio_proxy_pin  = true
 
@@ -209,6 +214,7 @@ module "search" {
   enable           = local.deploy_search
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   elastic_tls      = true
   redis_tls        = true
 
@@ -250,6 +256,7 @@ module "indexer" {
   enable           = local.deploy_indexer
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   elastic_tls      = true
   redis_tls        = true
   istio_proxy_pin  = true
@@ -297,6 +304,7 @@ module "indexer_queue" {
   enable           = local.deploy_indexer_queue
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
 
   env = [
     { name = "SPRING_APPLICATION_NAME", value = "indexer-queue" },
@@ -336,6 +344,7 @@ module "file" {
   enable           = local.deploy_file
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
   istio_proxy_pin  = true
 
@@ -381,6 +390,7 @@ module "workflow" {
   enable           = local.deploy_workflow
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   env = [

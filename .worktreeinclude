@@ -1,0 +1,2 @@
+infra/main.tfvars.json
+software/stack/osdu-images.auto.tfvars

@@ -54,6 +54,14 @@ spec:
             matchLabels:
               {{- include "osdu-spi-service.selectorLabels" . | nindent 14 }}
       {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       {{- if or .Values.elasticTls .Values.redisTls .Values.initContainers }}
       initContainers:

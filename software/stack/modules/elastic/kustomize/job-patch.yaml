@@ -13,6 +13,16 @@
 # limitations under the License.
 
 - op: add
+  path: /spec/template/spec/tolerations
+  value:
+    - effect: NoSchedule
+      key: workload
+      value: "platform"
+- op: add
+  path: /spec/template/spec/nodeSelector
+  value:
+    agentpool: platform
+- op: add
   path: /spec/template/spec/securityContext
   value:
     seccompProfile:

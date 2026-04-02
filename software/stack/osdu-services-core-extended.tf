@@ -26,6 +26,7 @@ module "notification" {
   enable           = local.deploy_notification
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   # Notification runs Undertow on port 8080 (app) and 8081 (management/actuator)
@@ -73,6 +74,7 @@ module "dataset" {
   enable           = local.deploy_dataset
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   # Dataset runs on port 8081 with default actuator health endpoint
@@ -130,6 +132,7 @@ module "register" {
   enable           = local.deploy_register
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   # Register runs on port 8081 with default actuator health endpoint
@@ -169,6 +172,7 @@ module "policy" {
   enable           = local.deploy_policy
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
 
   # Policy uses port 8080 with a service-specific health endpoint
   probes = {
@@ -220,6 +224,7 @@ module "secret" {
   enable           = local.deploy_secret
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
 
   # Secret uses port 8081 with /health/liveness path
   probes = {

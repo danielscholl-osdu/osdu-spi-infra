@@ -26,6 +26,7 @@ module "wellbore" {
   enable           = local.deploy_wellbore
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   # Wellbore is a Python FastAPI service — uses CLOUD_PROVIDER and SERVICE_HOST_* env vars
@@ -80,6 +81,7 @@ module "wellbore_worker" {
   enable           = local.deploy_wellbore_worker
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   # Wellbore worker is also Python FastAPI
@@ -130,6 +132,7 @@ module "eds_dms" {
   enable           = local.deploy_eds_dms
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   env = [
@@ -174,6 +177,7 @@ module "oetp_server" {
   enable           = local.deploy_oetp_server
   enable_common    = local.deploy_common
   namespace        = local.osdu_namespace
+  node_scheduling  = local.osdu_node_scheduling
   redis_tls        = true
 
   env = [
