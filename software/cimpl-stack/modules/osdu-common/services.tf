@@ -42,7 +42,7 @@ resource "kubectl_manifest" "osdu_peer_authentication" {
       namespace: ${var.namespace}
     spec:
       mtls:
-        mode: STRICT
+        mode: PERMISSIVE
   YAML
 
   depends_on = [kubernetes_namespace_v1.osdu]

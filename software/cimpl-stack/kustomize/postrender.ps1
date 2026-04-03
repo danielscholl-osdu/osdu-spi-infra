@@ -73,16 +73,19 @@ try {
     }
 
     # Run kustomize and filter out Namespace resources
-    $kustomizeOutput = kubectl kustomize $TempServiceDir
+    # Join into single string so cross-line regex replacements work correctly
+    $kustomizeOutput = (kubectl kustomize $TempServiceDir) -join "`n"
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     # Fix Keycloak cross-namespace references:
-    # 1. Rewrite jwksUri from osdu namespace to platform namespace
+    # 1. Rewrite FQDN references from osdu namespace to platform namespace
     # 2. Add internal Keycloak issuer to RequestAuthentication jwtRules
+    # 3. Add internal Keycloak issuer to AuthorizationPolicy iss claim checks
     #    so tokens issued via internal FQDN are accepted by Istio
     if ($PlatformNamespace -and $ReleaseNamespace) {
         $internalKeycloak = "keycloak.$PlatformNamespace.svc.cluster.local"
-        $kustomizeOutput = $kustomizeOutput -replace "keycloak\.$([regex]::Escape($ReleaseNamespace))\.svc\.cluster\.local(?!:\d)", $internalKeycloak
+        # Rewrite FQDN references (with or without port) to platform namespace without port
+        $kustomizeOutput = $kustomizeOutput -replace "keycloak\.$([regex]::Escape($ReleaseNamespace))\.svc\.cluster\.local(:\d+)?", $internalKeycloak
 
         # Add internal issuer to RequestAuthentication: inject an additional
         # jwtRule that accepts tokens with the internal Keycloak issuer URL
@@ -93,12 +96,15 @@ try {
     issuer: $internalIssuer
     jwksUri: $internalJwksUri
 "@
-        # Append after the last jwtRule in any RequestAuthentication
-        $kustomizeOutput = $kustomizeOutput -replace '(issuer: http://keycloak/realms/osdu\s+jwksUri: [^\n]+)', "`$1`n$internalRule"
+        # Append after the last jwtRule in any RequestAuthentication (with or without port)
+        $kustomizeOutput = $kustomizeOutput -replace '(issuer: http://keycloak(:\d+)?/realms/osdu\s+jwksUri: [^\n]+)', "`$1`n$internalRule"
+
+        # Add internal issuer to AuthorizationPolicy iss claim value lists
+        $kustomizeOutput = $kustomizeOutput -replace '(- http://keycloak(:\d+)?/realms/osdu)', "`$1`n      - $internalIssuer"
     }
 
     # Split on YAML document separators and filter out Namespace resources
-    $documents = ($kustomizeOutput -join "`n") -split '(?m)^---$'
+    $documents = $kustomizeOutput -split '(?m)^---$'
     foreach ($doc in $documents) {
         if ([string]::IsNullOrWhiteSpace($doc)) { continue }
         if ($doc -match '(?m)^kind:\s*Namespace\s*$') { continue }
