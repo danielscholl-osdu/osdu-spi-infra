@@ -25,7 +25,7 @@ resource "kubernetes_secret_v1" "datafier" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -42,7 +42,7 @@ resource "kubernetes_secret_v1" "storage_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -59,7 +59,7 @@ resource "kubernetes_secret_v1" "file_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -76,7 +76,7 @@ resource "kubernetes_secret_v1" "notification_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -93,7 +93,7 @@ resource "kubernetes_secret_v1" "register_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -125,7 +125,7 @@ resource "kubernetes_secret_v1" "workflow_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -142,7 +142,7 @@ resource "kubernetes_secret_v1" "indexer_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -159,7 +159,7 @@ resource "kubernetes_secret_v1" "wellbore_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -176,7 +176,7 @@ resource "kubernetes_secret_v1" "eds_keycloak" {
   data = {
     OPENID_PROVIDER_CLIENT_ID     = "datafier"
     OPENID_PROVIDER_CLIENT_SECRET = var.datafier_client_secret
-    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}:8080/realms/osdu"
+    OPENID_PROVIDER_URL           = "http://${var.keycloak_host}/realms/osdu"
   }
 
   depends_on = [kubernetes_namespace_v1.osdu]
@@ -193,7 +193,7 @@ resource "kubernetes_secret_v1" "oetp_server_secret" {
   data = {
     CIMPL_CLIENT_ID                 = "datafier"
     CIMPL_CLIENT_SECRET             = var.datafier_client_secret
-    CIMPL_TOKEN_URI                 = "http://${var.keycloak_host}:8080/realms/osdu/protocol/openid-connect/token"
+    CIMPL_TOKEN_URI                 = "http://${var.keycloak_host}/realms/osdu/protocol/openid-connect/token"
     CIMPL_SUBSCRIBER_PRIVATE_KEY_ID = var.cimpl_subscriber_private_key_id
   }
 

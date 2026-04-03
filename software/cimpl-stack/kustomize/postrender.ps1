@@ -81,7 +81,7 @@ try {
     # 2. Add internal Keycloak issuer to RequestAuthentication jwtRules
     #    so tokens issued via internal FQDN are accepted by Istio
     if ($PlatformNamespace -and $ReleaseNamespace) {
-        $internalKeycloak = "keycloak.$PlatformNamespace.svc.cluster.local:8080"
+        $internalKeycloak = "keycloak.$PlatformNamespace.svc.cluster.local"
         $kustomizeOutput = $kustomizeOutput -replace "keycloak\.$([regex]::Escape($ReleaseNamespace))\.svc\.cluster\.local(?!:\d)", $internalKeycloak
 
         # Add internal issuer to RequestAuthentication: inject an additional

@@ -61,7 +61,7 @@ $portForwardProc = $null
 try {
     # Start kubectl port-forward as a background process
     $portForwardProc = Start-Process kubectl `
-        -ArgumentList "port-forward", "svc/keycloak", "-n", $Namespace, "28080:8080" `
+        -ArgumentList "port-forward", "svc/keycloak", "-n", $Namespace, "28080:80" `
         -NoNewWindow -PassThru
 
     # Give the port-forward a moment to establish

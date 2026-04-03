@@ -118,7 +118,7 @@ resource "kubectl_manifest" "keycloak_headless_service" {
       publishNotReadyAddresses: true
       ports:
         - name: http
-          port: 8080
+          port: 80
           targetPort: http
           protocol: TCP
       selector:
@@ -142,7 +142,7 @@ resource "kubectl_manifest" "keycloak_service" {
       sessionAffinity: None
       ports:
         - name: http
-          port: 8080
+          port: 80
           targetPort: http
           protocol: TCP
       selector:

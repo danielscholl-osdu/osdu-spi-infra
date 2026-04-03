@@ -29,8 +29,8 @@ terraform {
       version = "~> 3.1"
     }
     kubectl = {
-      source  = "gavinbunney/kubectl"
-      version = "~> 1.19.0"
+      source  = "alekc/kubectl"
+      version = "~> 2.1"
     }
     null = {
       source  = "hashicorp/null"

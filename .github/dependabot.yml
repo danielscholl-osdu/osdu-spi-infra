@@ -64,7 +64,7 @@ updates:
         patterns:
           - "hashicorp/helm"
           - "hashicorp/kubernetes"
-          - "gavinbunney/kubectl"
+          - "alekc/kubectl"
 
   - package-ecosystem: "terraform"
     directory: "/software/spi-stack"
@@ -84,7 +84,7 @@ updates:
         patterns:
           - "hashicorp/helm"
           - "hashicorp/kubernetes"
-          - "gavinbunney/kubectl"
+          - "alekc/kubectl"
       hashicorp-utilities:
         patterns:
           - "hashicorp/null"
