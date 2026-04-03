@@ -31,7 +31,7 @@ jobs:
     outputs:
       deploy_status: ${{ steps.deploy.outcome }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install azd
         uses: Azure/setup-azd@v2
@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: smoke-test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install azd
         uses: Azure/setup-azd@v2
