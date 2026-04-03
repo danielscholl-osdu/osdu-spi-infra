@@ -32,7 +32,7 @@ cd infra && terraform force-unlock <lock-id>
 # or
 cd software/foundation && terraform force-unlock <lock-id>
 # or
-cd software/stack && terraform force-unlock <lock-id>
+cd software/spi-stack && terraform force-unlock <lock-id>
 ```
 
 ## Pod Issues

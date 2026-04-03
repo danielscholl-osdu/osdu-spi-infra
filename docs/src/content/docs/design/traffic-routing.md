@@ -9,7 +9,7 @@ Traffic flows through three distinct paths: external ingress via Gateway API, in
 
 ### Gateway API
 
-The gateway module (`software/stack/modules/gateway/`) configures Kubernetes Gateway API resources for external access with automatic TLS via cert-manager and Let's Encrypt.
+The gateway module (`software/spi-stack/modules/gateway/`) configures Kubernetes Gateway API resources for external access with automatic TLS via cert-manager and Let's Encrypt.
 
 | Endpoint | Hostname Pattern | Purpose |
 |---|---|---|

@@ -1,0 +1,88 @@
+-- Copyright 2026, Microsoft
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--      http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- ===== entitlements (Relational / Spring Data JDBC) =====
+\c entitlements
+CREATE SCHEMA IF NOT EXISTS entitlements AUTHORIZATION osdu;
+ALTER DATABASE entitlements SET search_path = "entitlements",public;
+
+CREATE TABLE IF NOT EXISTS entitlements."group" (
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY (
+        INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1
+    ),
+    name character varying,
+    description text,
+    email character varying,
+    partition_id character varying,
+    CONSTRAINT group_pkey PRIMARY KEY (id),
+    CONSTRAINT group_email_key UNIQUE (email),
+    CONSTRAINT group_name_partition_id_key UNIQUE (name, partition_id)
+);
+ALTER TABLE IF EXISTS entitlements."group" OWNER TO osdu;
+
+CREATE TABLE IF NOT EXISTS entitlements.app_id (
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    group_id bigint,
+    app_id character varying,
+    PRIMARY KEY (id),
+    CONSTRAINT app_id_group_fk FOREIGN KEY (group_id)
+        REFERENCES entitlements."group" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE CASCADE NOT VALID
+);
+ALTER TABLE IF EXISTS entitlements.app_id OWNER TO osdu;
+
+CREATE TABLE IF NOT EXISTS entitlements.member (
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY (
+        INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1
+    ),
+    email character varying,
+    partition_id character varying,
+    CONSTRAINT member_pkey PRIMARY KEY (id),
+    CONSTRAINT member_email_key UNIQUE (email)
+);
+ALTER TABLE IF EXISTS entitlements.member OWNER TO osdu;
+
+CREATE TABLE IF NOT EXISTS entitlements.member_to_group (
+    group_id bigint NOT NULL,
+    member_id bigint NOT NULL,
+    role character varying,
+    CONSTRAINT member_to_group_pkey PRIMARY KEY (group_id, member_id),
+    CONSTRAINT group_as_member_holder_fk FOREIGN KEY (group_id)
+        REFERENCES entitlements."group" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE CASCADE NOT VALID,
+    CONSTRAINT user_as_member_fk FOREIGN KEY (member_id)
+        REFERENCES entitlements.member (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE CASCADE NOT VALID
+);
+ALTER TABLE IF EXISTS entitlements.member_to_group OWNER TO osdu;
+
+CREATE TABLE IF NOT EXISTS entitlements.embedded_group (
+    parent_id bigint NOT NULL,
+    child_id bigint NOT NULL,
+    CONSTRAINT embedded_group_pk PRIMARY KEY (parent_id, child_id),
+    CONSTRAINT group_as_child_fk FOREIGN KEY (child_id)
+        REFERENCES entitlements."group" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE CASCADE NOT VALID,
+    CONSTRAINT group_as_parent_fk FOREIGN KEY (parent_id)
+        REFERENCES entitlements."group" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION ON DELETE CASCADE NOT VALID
+);
+ALTER TABLE IF EXISTS entitlements.embedded_group OWNER TO osdu;
+
+CREATE INDEX IF NOT EXISTS idx_group_to_group ON entitlements.embedded_group (parent_id, child_id);
+CREATE INDEX IF NOT EXISTS idx_member_to_group ON entitlements.member_to_group (group_id, member_id);
+CREATE INDEX IF NOT EXISTS idx_group_partition ON entitlements."group" (partition_id);
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA entitlements TO osdu;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA entitlements TO osdu;

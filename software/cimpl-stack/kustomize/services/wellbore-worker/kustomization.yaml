@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - all.yaml
+
+components:
+  - ../../components/seccomp
+  - ../../components/security-context
+  - ../../components/topology-spread
+  - ../../components/nodepool
+
+patches:
+  - path: probes.yaml
+    target:
+      kind: Deployment
+      labelSelector: "type=core"
+  - path: resources.yaml
+    target:
+      kind: Deployment
+  - path: resources.yaml
+    target:
+      kind: StatefulSet
+  # Wellbore worker image uses non-numeric user "appuser"; AKS requires numeric UID
+  - target:
+      kind: Deployment
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: placeholder
+      spec:
+        template:
+          spec:
+            securityContext:
+              runAsUser: 65532
+              runAsGroup: 65532

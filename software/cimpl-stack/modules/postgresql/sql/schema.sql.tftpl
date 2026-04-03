@@ -1,0 +1,87 @@
+-- Copyright 2026, Microsoft
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--      http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+
+-- ===== schema service (OSM — private + shared tenant) =====
+\c schema
+CREATE SCHEMA IF NOT EXISTS dataecosystem AUTHORIZATION osdu;
+CREATE SCHEMA IF NOT EXISTS "${data_partition_id}" AUTHORIZATION osdu;
+
+CREATE TABLE IF NOT EXISTS "${data_partition_id}".authority (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "Authority_pkey" PRIMARY KEY (pk), CONSTRAINT authority_id UNIQUE (id)
+);
+ALTER TABLE IF EXISTS "${data_partition_id}".authority OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS authority_datagin ON "${data_partition_id}".authority USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS "${data_partition_id}"."entityType" (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "EntityType_pkey" PRIMARY KEY (pk), CONSTRAINT entitytype_id UNIQUE (id)
+);
+ALTER TABLE IF EXISTS "${data_partition_id}"."entityType" OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS entitytype_datagin ON "${data_partition_id}"."entityType" USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS "${data_partition_id}"."schema_osm" (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "Schema_pkey" PRIMARY KEY (pk), CONSTRAINT schemarequest_id UNIQUE (id)
+);
+ALTER TABLE IF EXISTS "${data_partition_id}"."schema_osm" OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS schemarequest_datagin ON "${data_partition_id}"."schema_osm" USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS "${data_partition_id}".source (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "Source_pkey" PRIMARY KEY (pk), CONSTRAINT source_id UNIQUE (id)
+);
+ALTER TABLE IF EXISTS "${data_partition_id}".source OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS source_datagin ON "${data_partition_id}".source USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS dataecosystem.system_authority (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "Authority_pkey_system" PRIMARY KEY (pk), CONSTRAINT authority_id_system UNIQUE (id)
+);
+ALTER TABLE IF EXISTS dataecosystem.system_authority OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS system_authority_datagin ON dataecosystem.system_authority USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS dataecosystem."system_entity_type" (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "EntityType_pkey_system" PRIMARY KEY (pk), CONSTRAINT entitytype_id_system UNIQUE (id)
+);
+ALTER TABLE IF EXISTS dataecosystem."system_entity_type" OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS system_entity_type_datagin ON dataecosystem."system_entity_type" USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS dataecosystem."system_schema_osm" (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "Schema_pkey_system" PRIMARY KEY (pk), CONSTRAINT schemarequest_id_system UNIQUE (id)
+);
+ALTER TABLE IF EXISTS dataecosystem."system_schema_osm" OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS schemarequest_datagin ON dataecosystem."system_schema_osm" USING GIN (data);
+
+CREATE TABLE IF NOT EXISTS dataecosystem.system_source (
+    id text NOT NULL, pk bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    data jsonb NOT NULL,
+    CONSTRAINT "Source_pkey_system" PRIMARY KEY (pk), CONSTRAINT source_id_system UNIQUE (id)
+);
+ALTER TABLE IF EXISTS dataecosystem.system_source OWNER TO osdu;
+CREATE INDEX IF NOT EXISTS system_source_datagin ON dataecosystem.system_source USING GIN (data);
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "${data_partition_id}" TO osdu;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA "${data_partition_id}" TO osdu;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA dataecosystem TO osdu;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA dataecosystem TO osdu;

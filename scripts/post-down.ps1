@@ -29,7 +29,8 @@ $layers = @(
     @{ Path = "infra";               Label = "infra";               RemoveLockfile = $false },
     @{ Path = "infra-access";        Label = "infra-access";        RemoveLockfile = $false },
     @{ Path = "software/foundation"; Label = "foundation";          RemoveLockfile = $false },
-    @{ Path = "software/stack";      Label = "stack";               RemoveLockfile = $false }
+    @{ Path = "software/spi-stack";   Label = "spi-stack";           RemoveLockfile = $false },
+    @{ Path = "software/cimpl-stack"; Label = "cimpl-stack";         RemoveLockfile = $false }
 )
 
 # Add azd-managed infra state directory if env is known
@@ -86,7 +87,7 @@ foreach ($layer in $layers) {
 }
 
 # Clean generated osdu-versions.auto.tfvars (created by prerestore hook)
-$osduVersionsFile = Join-Path $repoRoot "software/stack/osdu-versions.auto.tfvars"
+$osduVersionsFile = Join-Path $repoRoot "software/spi-stack/osdu-versions.auto.tfvars"
 if (Test-Path $osduVersionsFile) {
     Remove-Item -Path $osduVersionsFile -Force
     Write-Host "  Removed: stack/osdu-versions.auto.tfvars" -ForegroundColor Gray

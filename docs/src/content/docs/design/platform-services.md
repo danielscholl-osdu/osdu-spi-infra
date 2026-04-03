@@ -66,4 +66,4 @@ Foundation (cert-manager, ECK, CNPG)
               └── OSDU Services (depend on all middleware)
 ```
 
-This ordering is enforced within a single Terraform state in `software/stack/`.
+This ordering is enforced within a single Terraform state in `software/spi-stack/`.

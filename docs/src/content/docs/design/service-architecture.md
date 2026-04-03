@@ -7,7 +7,7 @@ All OSDU services follow a uniform deployment pattern using a local Helm chart a
 
 ## Local Helm Chart: `osdu-spi-service`
 
-A single Helm chart (`software/stack/charts/osdu-spi-service/`) serves all 13+ OSDU services. The chart template bakes in all safeguards requirements:
+A single Helm chart (`software/spi-stack/charts/osdu-spi-service/`) serves all 13+ OSDU services. The chart template bakes in all safeguards requirements:
 
 | Requirement | Implementation |
 |---|---|
@@ -23,7 +23,7 @@ This approach was chosen over consuming upstream OSDU community Helm charts with
 
 ## Reusable Terraform Module
 
-Each OSDU service is deployed via the `osdu-spi-service` Terraform module (`software/stack/modules/osdu-spi-service/`), which wraps the Helm chart with consistent configuration:
+Each OSDU service is deployed via the `osdu-spi-service` Terraform module (`software/spi-stack/modules/osdu-spi-service/`), which wraps the Helm chart with consistent configuration:
 
 ```hcl
 module "partition_service" {
@@ -72,7 +72,7 @@ See [ADR-0005](/osdu-spi-infra/decisions/0005-per-service-health-probe-configura
 
 ## Common Configuration
 
-The `osdu-common` module (`software/stack/modules/osdu-common/`) creates shared resources consumed by all OSDU services:
+The `osdu-common` module (`software/spi-stack/modules/osdu-common/`) creates shared resources consumed by all OSDU services:
 
 - **Namespace** with Istio sidecar injection label
 - **ConfigMap** with Azure PaaS connection details (CosmosDB endpoints, Service Bus connection strings, Storage URLs)

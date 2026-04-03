@@ -5,7 +5,9 @@
 
 .DESCRIPTION
   Queries the OSDU OCI registry for each service chart and writes resolved versions
-  to software/stack/osdu-versions.auto.tfvars for Terraform consumption.
+  to software/cimpl-stack/osdu-versions.auto.tfvars for Terraform consumption.
+  This script is CIMPL-specific — the SPI stack uses a local Helm chart and does
+  not need OCI chart version resolution.
 
   Version modes:
     - Default (no env var)           : Uses "0.0.7-latest" tag (latest main branch CI build)
@@ -31,7 +33,7 @@
 #>
 
 param(
-    [string]$OutputDir = "$PSScriptRoot/../software/stack"
+    [string]$OutputDir = "$PSScriptRoot/../software/cimpl-stack"
 )
 
 Set-StrictMode -Version Latest

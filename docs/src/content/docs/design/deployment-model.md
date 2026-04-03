@@ -21,7 +21,7 @@ Deployed by the `post-provision` hook via Terraform.
 
 Installs cluster-wide operators via Helm: cert-manager, ECK (Elastic Cloud on Kubernetes), CNPG (CloudNativePG), and ExternalDNS. Shared primitives (Gateway API CRDs, StorageClasses) are applied via `kubectl_manifest`.
 
-### Layer 3: Software Stack (`software/stack/`)
+### Layer 3: Software Stack (`software/spi-stack/`)
 
 Deployed by the `pre-deploy` hook via Terraform.
 
@@ -115,9 +115,11 @@ osdu-spi-infra/
 ├── software/
 │   ├── foundation/               # Layer 2: Operators & CRDs
 │   │   └── charts/               #   cert-manager, ECK, CNPG, ExternalDNS
-│   └── stack/                    # Layer 3: Middleware + Services
-│       ├── charts/               #   osdu-spi-service Helm chart
-│       └── modules/              #   Terraform modules per component
+│   ├── spi-stack/                # Layer 3: SPI Middleware + Services
+│   │   ├── charts/               #   osdu-spi-service Helm chart
+│   │   └── modules/              #   Terraform modules per component
+│   └── cimpl-stack/              # Layer 3a: CIMPL Middleware + Services
+│       └── modules/              #   CIMPL Terraform modules per component
 │           ├── elastic/          #   Elasticsearch + Kibana
 │           ├── postgresql/       #   CNPG HA cluster
 │           ├── redis/            #   Redis (master + replicas)
