@@ -92,14 +92,7 @@ module "legal" {
   nodepool_name             = local.osdu_nodepool_label
   platform_namespace        = local.platform_namespace
 
-  # Chart default image tag :64459360 does not exist for legal-status-update-master.
-  # Override to the release image used by ROSA (qa/main/terraform/master-chart/variables.tf:724).
-  extra_set = [
-    {
-      name  = "data.legalStatusUpdateImage"
-      value = "community.opengroup.org:5555/osdu/platform/security-and-compliance/legal/legal-status-update-release:77a98643"
-    },
-  ]
+  extra_set = []
 
   preconditions = [
     { condition = !local.deploy_legal || local.deploy_entitlements, error_message = "Legal requires Entitlements." },
