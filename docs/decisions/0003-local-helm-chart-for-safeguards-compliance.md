@@ -5,11 +5,11 @@ date: 2026-03-20
 deciders: danielscholl
 ---
 
-# Local Helm Chart with Baked-In AKS Deployment Safeguards Compliance
+# Local Helm Chart for SPI Stack Safeguards Compliance
 
 ## Context and Problem Statement
 
-AKS Automatic enforces Deployment Safeguards via ValidatingAdmissionPolicies that require all pods to have readiness/liveness probes, resource requests/limits, seccomp profiles, non-root execution, and dropped capabilities. The OSDU community Helm charts (from the CIMPL OCI registry) do not expose all these fields, requiring a kustomize postrender pipeline to patch the rendered manifests. This postrender approach is fragile — it breaks when upstream charts change structure and is difficult to debug.
+AKS Automatic enforces Deployment Safeguards via ValidatingAdmissionPolicies that require all pods to have readiness/liveness probes, resource requests/limits, seccomp profiles, non-root execution, and dropped capabilities. For the SPI stack, the OSDU community Helm charts (from the CIMPL OCI registry) do not expose all these fields, requiring a kustomize postrender pipeline to patch the rendered manifests. This postrender approach is fragile — it breaks when upstream charts change structure and is difficult to debug.
 
 ## Decision Drivers
 
@@ -26,7 +26,7 @@ AKS Automatic enforces Deployment Safeguards via ValidatingAdmissionPolicies tha
 
 ## Decision Outcome
 
-Chosen option: "Local Helm chart with compliance baked in", because all OSDU Azure SPI services share the same deployment shape and the safeguards requirements are known at authoring time. A single reusable chart eliminates the postrender pipeline entirely.
+Chosen option: "Local Helm chart with compliance baked in", because all OSDU Azure SPI services share the same deployment shape and the safeguards requirements are known at authoring time. A single reusable chart eliminates the postrender pipeline entirely for the SPI stack. The CIMPL stack takes a different approach — see [ADR-0006](0006-kustomize-postrender-for-cimpl-safeguards.md).
 
 ### Consequences
 

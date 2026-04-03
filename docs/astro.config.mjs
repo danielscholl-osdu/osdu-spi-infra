@@ -42,10 +42,12 @@ export default defineConfig({
 					items: [
 						{ label: 'Overview', slug: 'decisions/overview' },
 						{ label: 'ADR-0001: Three-Layer Model', slug: 'decisions/0001-three-layer-deployment-model' },
-						{ label: 'ADR-0002: Hybrid PaaS', slug: 'decisions/0002-azure-paas-with-in-cluster-middleware' },
-						{ label: 'ADR-0003: Local Helm Chart', slug: 'decisions/0003-local-helm-chart-for-safeguards-compliance' },
+						{ label: 'ADR-0002: Dual-Stack Architecture', slug: 'decisions/0002-dual-stack-spi-and-cimpl-side-by-side' },
+						{ label: 'ADR-0003: SPI Local Helm Chart', slug: 'decisions/0003-local-helm-chart-for-safeguards-compliance' },
 						{ label: 'ADR-0004: Istio CNI Chaining', slug: 'decisions/0004-istio-cni-chaining-for-sidecar-injection' },
 						{ label: 'ADR-0005: Health Probes', slug: 'decisions/0005-per-service-health-probe-configuration' },
+						{ label: 'ADR-0006: CIMPL Kustomize Postrender', slug: 'decisions/0006-kustomize-postrender-for-cimpl-safeguards' },
+						{ label: 'ADR-0007: Karpenter NodePools', slug: 'decisions/0007-karpenter-nodepools-for-workload-isolation' },
 					],
 				},
 				{
