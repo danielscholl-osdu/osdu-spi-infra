@@ -28,10 +28,13 @@ Deploying OSDU on AKS requires provisioning Azure PaaS resources, installing clu
 
 Chosen option: **Three-layer model with independent state**, because it isolates blast radius per layer, respects CRD ordering, and enables fast stack-only iteration via `azd deploy` while `azd provision` handles infrastructure.
 
+Layer 3 supports two independent stack variants — `spi-stack` (Azure SPI with PaaS backends) and `cimpl-stack` (fully in-cluster CIMPL) — that can be deployed individually or side-by-side on the same cluster. Both share the same Layer 1 infrastructure and Layer 2 foundation.
+
 ### Consequences
 
 - **Good:** Stack redeployment takes ~5 minutes instead of re-evaluating all 3 layers
 - **Good:** Foundation CRDs are guaranteed to exist before stack Helm releases reference them
 - **Good:** infra-access layer enables privileged RBAC bootstrap with minimal scope
+- **Good:** Multiple stack variants share foundation without duplication
 - **Bad:** Cross-layer data passing requires Terraform outputs → azd env → Terraform variables plumbing
 - **Bad:** `azd down` must tear down in reverse order via lifecycle hooks
