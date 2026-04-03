@@ -76,11 +76,25 @@ try {
     $kustomizeOutput = kubectl kustomize $TempServiceDir
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-    # Fix JWKS URIs: Helm charts assume Keycloak is in the OSDU namespace,
-    # but it runs in the platform namespace. Rewrite jwksUri to use the
-    # correct platform namespace FQDN so Istio can fetch JWKS keys.
+    # Fix Keycloak cross-namespace references:
+    # 1. Rewrite jwksUri from osdu namespace to platform namespace
+    # 2. Add internal Keycloak issuer to RequestAuthentication jwtRules
+    #    so tokens issued via internal FQDN are accepted by Istio
     if ($PlatformNamespace -and $ReleaseNamespace) {
-        $kustomizeOutput = $kustomizeOutput -replace "keycloak\.$([regex]::Escape($ReleaseNamespace))\.svc\.cluster\.local", "keycloak.$PlatformNamespace.svc.cluster.local:8080"
+        $internalKeycloak = "keycloak.$PlatformNamespace.svc.cluster.local:8080"
+        $kustomizeOutput = $kustomizeOutput -replace "keycloak\.$([regex]::Escape($ReleaseNamespace))\.svc\.cluster\.local(?!:\d)", $internalKeycloak
+
+        # Add internal issuer to RequestAuthentication: inject an additional
+        # jwtRule that accepts tokens with the internal Keycloak issuer URL
+        $internalIssuer = "http://$internalKeycloak/realms/osdu"
+        $internalJwksUri = "http://$internalKeycloak/realms/osdu/protocol/openid-connect/certs"
+        $internalRule = @"
+  - forwardOriginalToken: true
+    issuer: $internalIssuer
+    jwksUri: $internalJwksUri
+"@
+        # Append after the last jwtRule in any RequestAuthentication
+        $kustomizeOutput = $kustomizeOutput -replace '(issuer: http://keycloak/realms/osdu\s+jwksUri: [^\n]+)', "`$1`n$internalRule"
     }
 
     # Split on YAML document separators and filter out Namespace resources

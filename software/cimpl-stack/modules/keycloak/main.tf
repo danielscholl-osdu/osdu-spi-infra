@@ -229,10 +229,6 @@ resource "kubectl_manifest" "keycloak_statefulset" {
                   value: "8080"
                 - name: KC_HTTP_MANAGEMENT_PORT
                   value: "9000"
-                - name: KC_HOSTNAME
-                  value: "keycloak"
-                - name: KC_HOSTNAME_PORT
-                  value: "8080"
                 - name: KC_HOSTNAME_STRICT
                   value: "false"
                 - name: KC_PROXY_HEADERS
