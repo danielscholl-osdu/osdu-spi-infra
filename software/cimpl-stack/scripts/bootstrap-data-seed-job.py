@@ -20,7 +20,7 @@ Creates a default legal tag and loads OSDU reference data via the Storage API.
 All service calls use in-cluster FQDNs (no kubectl port-forward).
 
 Environment variables:
-  KEYCLOAK_URL              Keycloak base URL (e.g. http://keycloak.platform:8080)
+  KEYCLOAK_URL              Keycloak base URL (e.g. http://keycloak.platform)
   LEGAL_URL                 Legal service base URL (e.g. http://legal.osdu)
   STORAGE_URL               Storage service base URL (e.g. http://storage.osdu)
   DATA_PARTITION            Data partition ID (e.g. "osdu")

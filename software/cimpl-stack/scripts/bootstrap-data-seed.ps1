@@ -124,7 +124,7 @@ spec:
             - name: PYTHONUNBUFFERED
               value: "1"
             - name: KEYCLOAK_URL
-              value: "http://keycloak.${PlatformNamespace}.svc.cluster.local:8080"
+              value: "http://keycloak.${PlatformNamespace}.svc.cluster.local"
             - name: LEGAL_URL
               value: "http://legal.${OsduNamespace}.svc.cluster.local"
             - name: STORAGE_URL

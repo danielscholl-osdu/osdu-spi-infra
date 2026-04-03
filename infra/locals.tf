@@ -15,9 +15,9 @@
 # Derived names and partition processing for the infrastructure layer.
 
 locals {
-  # Resource naming: spi-<env_name> allows multiple deployments
-  resource_group_name = "rg-spi-${var.environment_name}"
-  cluster_name        = "spi-${var.environment_name}"
+  # Resource naming: osdu-<env_name> allows multiple deployments
+  resource_group_name = "osdu-${var.environment_name}"
+  cluster_name        = "osdu-${var.environment_name}"
 
   # Azure Managed Grafana names are limited to 23 characters.
   grafana_name = trimsuffix(substr("${local.cluster_name}-grafana", 0, 23), "-")
@@ -25,7 +25,7 @@ locals {
   # Standard tags applied to all Azure resources.
   common_tags = merge(var.tags, {
     "azd-env-name" = var.environment_name
-    "project"      = "osdu-spi"
+    "project"      = "osdu"
     "Contact"      = var.contact_email
   })
 

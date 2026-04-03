@@ -161,7 +161,7 @@ resource "helm_release" "airflow" {
       - name: CLOUD_PROVIDER
         value: "baremetal"
       - name: KEYCLOAK_AUTH_URL
-        value: "http://${var.keycloak_host}:8080/realms/osdu/protocol/openid-connect/token"
+        value: "http://${var.keycloak_host}/realms/osdu/protocol/openid-connect/token"
       - name: KEYCLOAK_CLIENT_ID
         value: "datafier"
       - name: KEYCLOAK_CLIENT_SECRET
