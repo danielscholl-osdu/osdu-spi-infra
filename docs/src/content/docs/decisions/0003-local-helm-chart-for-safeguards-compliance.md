@@ -1,6 +1,6 @@
 ---
-title: "ADR-0003: Local Helm Chart for Safeguards Compliance"
-description: Baked-in AKS Deployment Safeguards compliance instead of kustomize postrender
+title: "ADR-0003: Local Helm Chart for SPI Stack Safeguards Compliance"
+description: Baked-in AKS Deployment Safeguards compliance for the SPI stack instead of kustomize postrender
 ---
 
 **Status:** Accepted  
@@ -9,7 +9,7 @@ description: Baked-in AKS Deployment Safeguards compliance instead of kustomize 
 
 ## Context and Problem Statement
 
-AKS Automatic enforces Deployment Safeguards via ValidatingAdmissionPolicies that require all pods to have readiness/liveness probes, resource requests/limits, seccomp profiles, non-root execution, and dropped capabilities. The OSDU community Helm charts do not expose all these fields, requiring a kustomize postrender pipeline to patch the rendered manifests. This postrender approach is fragile — it breaks when upstream charts change structure and is difficult to debug.
+AKS Automatic enforces Deployment Safeguards via ValidatingAdmissionPolicies that require all pods to have readiness/liveness probes, resource requests/limits, seccomp profiles, non-root execution, and dropped capabilities. For the SPI stack, the OSDU community Helm charts (from the CIMPL OCI registry) do not expose all these fields, requiring a kustomize postrender pipeline to patch the rendered manifests. This postrender approach is fragile — it breaks when upstream charts change structure and is difficult to debug.
 
 ## Decision Drivers
 
@@ -26,7 +26,7 @@ AKS Automatic enforces Deployment Safeguards via ValidatingAdmissionPolicies tha
 
 ## Decision Outcome
 
-Chosen option: **Local Helm chart with compliance baked in**, because all OSDU Azure SPI services share the same deployment shape and the safeguards requirements are known at authoring time. A single reusable chart eliminates the postrender pipeline entirely.
+Chosen option: **Local Helm chart with compliance baked in**, because all OSDU Azure SPI services share the same deployment shape and the safeguards requirements are known at authoring time. A single reusable chart eliminates the postrender pipeline entirely for the SPI stack. The CIMPL stack takes a different approach — see [ADR-0006](/osdu-spi-infra/decisions/0006-kustomize-postrender-for-cimpl-safeguards/).
 
 ### Consequences
 
