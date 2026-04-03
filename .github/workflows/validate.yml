@@ -3,17 +3,12 @@ name: Validate
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'infra/**'
-      - 'infra-access/**'
-      - 'software/**'
-      - 'docs/**'
-      - '.github/workflows/validate.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   detect-changes:
@@ -124,3 +119,52 @@ jobs:
             exit 1
           fi
           echo "All validation checks passed"
+
+  create-failure-issue:
+    needs: summary
+    if: ${{ always() && needs.summary.result == 'failure' && github.event.pull_request.user.login == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create issue for failed dependency update
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const prTitle = context.payload.pull_request.title;
+            const prUrl = context.payload.pull_request.html_url;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const title = `Dependabot validation failed: ${prTitle}`;
+            const body = [
+              `## Dependency Update Validation Failed`,
+              ``,
+              `**Pull Request:** #${prNumber} — ${prTitle}`,
+              `**PR Link:** ${prUrl}`,
+              `**Build Log:** ${runUrl}`,
+              ``,
+              `### What happened`,
+              ``,
+              `A Dependabot dependency update failed validation checks.`,
+              `This likely means the new version introduces a breaking change.`,
+              ``,
+              `### Next steps`,
+              ``,
+              `1. Review the [build log](${runUrl}) for specific errors`,
+              `2. Check the provider/package changelog for breaking changes`,
+              `3. Update Terraform code to be compatible, or pin to the previous version`,
+              `4. If pinning, add a comment in \`versions.tf\` explaining why`,
+              ``,
+              `### Checklist`,
+              ``,
+              `- [ ] Root cause identified`,
+              `- [ ] Fix applied or version pinned`,
+              `- [ ] PR merged or closed`,
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['build-failed', 'dependencies', 'human-required'],
+            });
