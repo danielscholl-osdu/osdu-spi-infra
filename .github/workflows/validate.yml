@@ -8,7 +8,7 @@ on:
       - 'infra-access/**'
       - 'software/**'
       - 'docs/**'
-      - '.github/workflows/validate.yml'
+      - '.github/**'
   workflow_dispatch:
 
 permissions:
